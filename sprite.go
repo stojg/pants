@@ -31,6 +31,11 @@ func (s *Sprite) SetVelocity(x, y float64) {
 	s.changed = true
 }
 
+func (s *Sprite) SetRotation(orientation float64) {
+	s.Rotation = orientation
+	s.changed = true
+}
+
 func (s *Sprite) Kill() {
 	s.Dead = true
 	s.changed = true

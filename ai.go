@@ -11,16 +11,17 @@ type AI interface {
 }
 
 type AIDrunkard struct {
+	state string
 }
 
 func (d *AIDrunkard) Update(s *Sprite, w *World, t time.Duration) {
 	for _, input := range s.inputs {
 		switch input.Action {
 		case "mouseOver":
-//			d.Flee(w, s)
-//			return
+			d.Flee(w, s)
+			return
 		case "mouseOut":
-			d.Stop(w, s)
+			d.Idle(w, s)
 			return
 		case "clickUp":
 			log.Printf("kill me %d", s.Id)
