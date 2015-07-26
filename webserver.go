@@ -56,5 +56,5 @@ func (server *webserver) serveWs(w http.ResponseWriter, r *http.Request) {
 	h.register <- c
 
 	go c.writePump()
-	c.readPump()
+	go c.readPump()
 }
