@@ -41,7 +41,7 @@ var latency = 0;
 var maxSnapshotBuffer = 5;
 
 var linearInterpolation = function (from, to, coef) {
-	var position = {x: 0, y: 0, rotation: 0};
+	var position = {x: 0, y: 0, orientation: 0};
 
 	var diffX = to.x - from.x;
 	if (Math.abs(diffX) < 0.1) {
@@ -55,11 +55,11 @@ var linearInterpolation = function (from, to, coef) {
 	} else {
 		position.y = from.y + coef * diffY;
 	}
-	var diffRotation = to.rotation - from.rotation;
-	if (Math.abs(diffRotation) < 0.1) {
-		position.rotation = to.rotation;
+	var diffOrientation = to.orientation - from.orientation;
+	if (Math.abs(diffOrientation) < 0.1) {
+		position.orientation = to.orientation;
 	} else {
-		position.rotation = from.rotation + coef * diffRotation;
+		position.orientation = from.orientation + coef * diffOrientation;
 	}
 	return position;
 };
@@ -88,7 +88,7 @@ function update() {
 
 		sprite.height = 20;
 		sprite.width = 20;
-		sprite.rotation = t.rotation;
+		sprite.rotation = t.orientation;
 		sprite.x = t.x;
 		sprite.y = t.y;
 

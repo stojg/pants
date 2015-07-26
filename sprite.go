@@ -15,12 +15,12 @@ type Sprite struct {
 	Id       uint64 `bson:",minsize"`
 	AIs      []AI
 	X, Y     float64 `bson:",minsize,omitempty"`
-	velocity *Vec2
-	Rotation float64 `bson:",minsize"`
+	Orientation float64 `bson:",minsize"`
 	Image    string  `bson:",minsize,omitempty"`
+	Dead     bool
+	velocity *Vec2
 	inputs   []*InputRequest
 	changed  bool
-	Dead     bool
 }
 
 func (s *Sprite) SetVelocity(vec *Vec2) {
@@ -28,8 +28,8 @@ func (s *Sprite) SetVelocity(vec *Vec2) {
 	s.changed = true
 }
 
-func (s *Sprite) SetRotation(orientation float64) {
-	s.Rotation = orientation
+func (s *Sprite) SetOrientation(orientation float64) {
+	s.Orientation = orientation
 	s.changed = true
 }
 
@@ -88,7 +88,7 @@ func (s *SpriteList) NewSprite(x, y float64, image string) {
 	sprite.SetVelocity(&Vec2{0,0})
 	sprite.Image = image
 	sprite.inputs = make([]*InputRequest, 0)
-	sprite.Rotation = 3.14 / 2
+	sprite.Orientation = 3.14 / 2
 	sprite.AIs = make([]AI, 0)
 	sprite.AIs = append(sprite.AIs, &AIDrunkard{})
 	s.Add(sprite)
