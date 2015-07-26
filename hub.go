@@ -52,6 +52,10 @@ func (h *hub) run() {
 }
 
 func (h *hub) Send(m *Message) {
-	bson, _ := bson.Marshal(m)
+	bson, err := bson.Marshal(m)
+	if err != nil {
+		log.Printf("error %s", err)
+		return
+	}
 	h.broadcast <- bson
 }
