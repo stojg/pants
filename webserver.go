@@ -16,7 +16,7 @@ func (server *webserver) Start() {
 	server.upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
-		CheckOrigin: func(r *http.Request) bool { return true },
+		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
 	http.HandleFunc("/", server.serveStatic)
@@ -24,7 +24,7 @@ func (server *webserver) Start() {
 
 	log.Printf("webserver starting on %s", server.port)
 	if err := http.ListenAndServe(":"+server.port, nil); err != nil {
-		log.Fatal("http.ListenAndServe: %s ", err)
+		log.Fatalf("http.ListenAndServe: %s ", err)
 	}
 }
 

@@ -10,7 +10,6 @@ type Director struct {
 }
 
 func (director *Director) Update(w *World, duration time.Duration) {
-
 	if w.rand.Float32() > 0.99 {
 		w.spriteList.NewSprite(
 			w.rand.Float64()*800,

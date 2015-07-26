@@ -32,7 +32,6 @@ func (c *connection) readPump() {
 	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, message, err := c.ws.ReadMessage()
-
 		if err != nil {
 			log.Printf("error on socket read: %s", err)
 			break
@@ -63,10 +62,10 @@ func (c *connection) handleInputRequest(msg map[string]interface{}) {
 	if err := mapstructure.Decode(msg, &request); err != nil {
 		log.Printf("error: could not decode incoming message: %s", err)
 	}
-	sprite, ok := list.sprites[request.Id];
+	sprite, ok := list.sprites[request.Id]
 	if !ok {
 		log.Printf("error: no sprite with id %d for input command", request.Id)
-		return;
+		return
 	}
 	sprite.AddInput(&request)
 }

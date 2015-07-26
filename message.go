@@ -18,4 +18,3 @@ type InputRequest struct {
 	Action string
 	Id     uint64
 }
-
