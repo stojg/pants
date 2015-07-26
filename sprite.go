@@ -82,9 +82,9 @@ func (s *SpriteList) NewSprite(x, y float64, image string) {
 	sprite.Dead = false
 	sprite.SetPosition(x, y)
 	sprite.Image = image
-	sprite.inputs = make([]*InputRequest,0)
+	sprite.inputs = make([]*InputRequest, 0)
 	sprite.Rotation = 3.14 / 2
-	sprite.AIs = make([]AI,0)
+	sprite.AIs = make([]AI, 0)
 	sprite.AIs = append(sprite.AIs, &AIDrunkard{})
 	s.Add(sprite)
 }
