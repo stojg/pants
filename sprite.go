@@ -79,7 +79,7 @@ func (s *Sprite) handleAI(w *World, t time.Duration) {
 // Entities.
 type SpriteList struct {
 	lastEntityID uint64
-	sprites map[uint64]*Sprite
+	sprites      map[uint64]*Sprite
 }
 
 func (s *SpriteList) NewSprite(x, y float64, image string) {
