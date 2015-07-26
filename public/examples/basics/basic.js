@@ -41,21 +41,25 @@ var latency = 0;
 var maxSnapshotBuffer = 5;
 
 var linearInterpolation = function (from, to, coef) {
-	var position = {x: 0, y: 0},
-		diffX,
-		diffY;
+	var position = {x: 0, y: 0, rotation: 0};
 
-	diffX = to.x - from.x;
+	var diffX = to.x - from.x;
 	if (Math.abs(diffX) < 0.1) {
 		position.x = from.x;
 	} else {
 		position.x = from.x + coef * diffX;
 	}
-	diffY = to.y - from.y;
+	var diffY = to.y - from.y;
 	if (Math.abs(diffY) < 0.1) {
 		position.y = from.y;
 	} else {
 		position.y = from.y + coef * diffY;
+	}
+	var diffRotation = to.rotation - from.rotation;
+	if (Math.abs(diffRotation) < 0.1) {
+		position.rotation = to.rotation;
+	} else {
+		position.rotation = from.rotation + coef * diffRotation;
 	}
 	return position;
 };
@@ -70,23 +74,21 @@ function update() {
 		var sprite = sprites[key];
 
 		var now = window.performance.now() - interpolationDelay;
-		var curr = timeDiff + sprite.snapshots[0].timestamp;
+		var currentTimestamp = timeDiff + sprite.snapshots[0].timestamp;
 
 		// wait until we have enough snapshots
 		if (sprite.snapshots.length < 2) {
 			continue;
 		}
 
-		var next = timeDiff + sprite.snapshots[1].timestamp;
+		var nextTimestamp = timeDiff + sprite.snapshots[1].timestamp;
 
-		var coefficient = (now - curr) / (next - curr);
+		var coefficient = (now - currentTimestamp) / (nextTimestamp - currentTimestamp);
 		var t = linearInterpolation(sprite.snapshots[0], sprite.snapshots[1], coefficient);
-
-		var snapshot = sprite.snapshots[0];
 
 		sprite.height = 20;
 		sprite.width = 20;
-		sprite.rotation = snapshot.rotation;
+		sprite.rotation = t.rotation;
 		sprite.x = t.x;
 		sprite.y = t.y;
 
@@ -94,8 +96,6 @@ function update() {
 		if (coefficient > 1) {
 			sprite.snapshots.shift();
 		}
-
-		//sprite.x += (sprite.speed * (elapsed / 1000));
 	}
 }
 
@@ -103,7 +103,6 @@ function handleMessage(msg) {
 	var topic = msg.topic;
 	var data = msg.data;
 
-	// http://gamedev.stackexchange.com/a/93662
 	var now = window.performance.now();
 	if (topic === 'time_request') {
 		latency = (now - msg.client) / 2;
@@ -122,8 +121,11 @@ function handleMessage(msg) {
 			var bunny = new PIXI.Sprite(texture);
 			sprites[snapshot.id] = bunny;
 			sprites[snapshot.id].id = snapshot.id;
+			sprites[snapshot.id].x = snapshot.x;
+			sprites[snapshot.id].y = snapshot.y;
 			sprites[snapshot.id].anchor.x = 0.5;
 			sprites[snapshot.id].anchor.y = 0.5;
+
 			sprites[snapshot.id].interactive = true;
 			sprites[snapshot.id]
 				// set the mouse down and touch start callback...
@@ -142,6 +144,11 @@ function handleMessage(msg) {
 			container.addChild(bunny);
 			sprites[snapshot.id].snapshots = [];
 		}
+
+		if(snapshot.dead) {
+			container.removeChild(sprites[snapshot.id]);
+		}
+
 		snapshot.timestamp = msg.timestamp;
 
 		// biggest size of the queue is 20 history items
