@@ -1,9 +1,13 @@
 package main
 
 import (
+	"log"
 	"math/rand"
 	"time"
 )
+
+const NetFPS = 50 * time.Millisecond
+const FPS = 16 * time.Millisecond
 
 func NewWorld(list *SpriteList) *World {
 	current := time.Now()
@@ -26,37 +30,41 @@ type World struct {
 	director   *Director
 }
 
-func (w *World) Tick() {
-	currentTime := time.Now()
-	w.worldTick(currentTime)
-	w.networkTick(currentTime)
+func (w *World) Run() {
+	go w.worldTick()
+	go w.networkTick()
 }
 
-func (w *World) networkTick(currentTime time.Time) {
-	duration := currentTime.Sub(w.netTicked)
-	if duration < 50*time.Millisecond {
-		return
+func (w *World) networkTick() {
+	ticker := time.NewTicker(NetFPS)
+	for currentTime := range ticker.C {
+		duration := currentTime.Sub(w.netTicked)
+		if duration-NetFPS > 4*time.Millisecond {
+			log.Printf("net is lagging %s", duration-NetFPS)
+		}
+		w.netTicked = currentTime
+		w.netTick += 1
+		// Send a snapshot to all connections
+		h.Send(&Message{Topic: "update", Data: w.spriteList.Changed(true), Tick: w.gameTick, Timestamp: float64(time.Now().UnixNano()) / 1000000})
 	}
-	w.netTicked = currentTime
-	w.netTick += 1
-	// Send a snapshot to all connections
-	h.Send(&Message{Topic: "update", Data: w.spriteList.Changed(true), Tick: w.gameTick, Timestamp: float64(time.Now().UnixNano())/1000000,})
 }
 
-func (w *World) worldTick(currentTime time.Time) {
-	duration := currentTime.Sub(w.gameTicked)
-	if duration < 16*time.Millisecond {
-		return
+func (w *World) worldTick() {
+	ticker := time.NewTicker(FPS)
+	for currentTime := range ticker.C {
+		duration := currentTime.Sub(w.gameTicked)
+		if duration-FPS > 4*time.Millisecond {
+			log.Printf("world is lagging %s", duration-FPS)
+		}
+		w.gameTicked = currentTime
+		w.gameTick += 1
+
+		// world AI
+		w.director.Update(w, duration)
+
+		// Individual entities
+		for _, sprite := range w.spriteList.sprites {
+			sprite.Update(w, duration)
+		}
 	}
-	w.gameTicked = currentTime
-	w.gameTick += 1
-
-	// world AI
-	w.director.Update(w, duration);
-
-	// Individual entities
-	for _, sprite := range w.spriteList.sprites {
-		sprite.Update(w, duration)
-	}
-
 }
