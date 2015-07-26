@@ -12,15 +12,15 @@ func init() {
 }
 
 type Sprite struct {
-	Id       uint64 `bson:minsize`
+	Id       uint64 `bson:",minsize"`
 	AIs      []AI
-	X, Y     float64 `bson:minsize,omitempty`
+	X, Y     float64 `bson:",minsize,omitempty"`
 	velocity struct {
 		x, y float64
 	}
-	Rotation float32 `bson:minsize`
-	Image    string  `bson:minsize,omitempty`
-	inputs []*InputRequest
+	Rotation float64 `bson:",minsize"`
+	Image    string  `bson:",minsize,omitempty"`
+	inputs   []*InputRequest
 	changed  bool
 	dead bool
 
