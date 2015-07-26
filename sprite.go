@@ -22,8 +22,7 @@ type Sprite struct {
 	Image    string  `bson:",minsize,omitempty"`
 	inputs   []*InputRequest
 	changed  bool
-	dead bool
-
+	Dead     bool
 }
 
 func (s *Sprite) SetVelocity(x, y float64) {
@@ -33,7 +32,7 @@ func (s *Sprite) SetVelocity(x, y float64) {
 }
 
 func (s *Sprite) Kill() {
-	s.dead = true
+	s.Dead = true
 	s.changed = true
 }
 
@@ -47,7 +46,7 @@ func (s *Sprite) SetPosition(x, y float64) {
 }
 
 func (s *Sprite) Update(w *World, t time.Duration) {
-	if s.dead {
+	if s.Dead {
 		return
 	}
 	s.handleAI(w, t)
@@ -80,7 +79,7 @@ type SpriteList struct {
 
 func (s *SpriteList) NewSprite(x, y float64, image string) {
 	sprite := &Sprite{}
-	sprite.dead = false
+	sprite.Dead = false
 	sprite.SetPosition(x, y)
 	sprite.Image = image
 	sprite.inputs = make([]*InputRequest,0)
