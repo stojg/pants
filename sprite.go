@@ -15,9 +15,7 @@ type Sprite struct {
 	Id       uint64 `bson:",minsize"`
 	AIs      []AI
 	X, Y     float64 `bson:",minsize,omitempty"`
-	velocity struct {
-		x, y float64
-	}
+	velocity *Vec2
 	Rotation float64 `bson:",minsize"`
 	Image    string  `bson:",minsize,omitempty"`
 	inputs   []*InputRequest
@@ -25,9 +23,8 @@ type Sprite struct {
 	Dead     bool
 }
 
-func (s *Sprite) SetVelocity(x, y float64) {
-	s.velocity.x = x
-	s.velocity.y = y
+func (s *Sprite) SetVelocity(vec *Vec2) {
+	s.velocity = vec
 	s.changed = true
 }
 
@@ -41,8 +38,8 @@ func (s *Sprite) Kill() {
 	s.changed = true
 }
 
-func (s *Sprite) Velocity() (x, y float64) {
-	return s.velocity.x, s.velocity.y
+func (s *Sprite) Velocity() *Vec2 {
+	return s.velocity
 }
 
 func (s *Sprite) SetPosition(x, y float64) {
@@ -60,9 +57,11 @@ func (s *Sprite) Update(w *World, t time.Duration) {
 }
 
 func (s *Sprite) integrate(t time.Duration) {
-	moveX := s.velocity.x * t.Seconds()
-	moveY := s.velocity.y * t.Seconds()
-	s.SetPosition(s.X+moveX, s.Y+moveY)
+	if s.velocity != nil {
+		moveX := s.velocity.X * t.Seconds()
+		moveY := s.velocity.Y * t.Seconds()
+		s.SetPosition(s.X+moveX, s.Y+moveY)
+	}
 }
 
 func (s *Sprite) AddInput(i *InputRequest) {
@@ -86,6 +85,7 @@ func (s *SpriteList) NewSprite(x, y float64, image string) {
 	sprite := &Sprite{}
 	sprite.Dead = false
 	sprite.SetPosition(x, y)
+	sprite.SetVelocity(&Vec2{0,0})
 	sprite.Image = image
 	sprite.inputs = make([]*InputRequest, 0)
 	sprite.Rotation = 3.14 / 2

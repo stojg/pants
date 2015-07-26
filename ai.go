@@ -37,14 +37,14 @@ func (d *AIDrunkard) Flee(w *World, s *Sprite) {
 		rot := w.rand.Float64() * math.Pi * 2
 		s.SetRotation(rot)
 		vel := RadiansVec2(rot).Multiply(50)
-		s.SetVelocity(vel.X, vel.Y)
+		s.SetVelocity(vel)
 		d.state = "flee"
 	}
 }
 
 func (d *AIDrunkard) Idle(w *World, s *Sprite) {
 	d.state = "idle"
-	s.SetVelocity(0, 0)
+	s.SetVelocity(&Vec2{0,0})
 }
 
 func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
@@ -63,5 +63,5 @@ func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
 		s.Rotation = 0
 	}
 	vel := RadiansVec2(s.Rotation).Multiply(10)
-	s.SetVelocity(vel.X, vel.Y)
+	s.SetVelocity(vel)
 }
