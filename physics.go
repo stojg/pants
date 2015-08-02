@@ -23,6 +23,6 @@ func (c *PhysicsComponent) Update(sprite *Sprite, w *World, seconds float64) {
 	c.Position.Add(c.Velocity.Multiply(seconds))
 	if !c.Position.Equals(c.prevPosition) {
 		c.prevPosition.Copy(c.Position)
-		sprite.changed = true
+		list.updated[sprite.Id] = true
 	}
 }

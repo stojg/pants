@@ -7,19 +7,21 @@ import (
 
 func NewEntityList() *EntityList {
 	return &EntityList{
-		sprites:           make(map[uint64]*Sprite),
-		AIComponents:      make(map[uint64]AI),
-		PhysicsComponents: make(map[uint64]*PhysicsComponent),
+		sprites: make(map[uint64]*Sprite),
+		ais:     make(map[uint64]AI),
+		physics: make(map[uint64]*PhysicsComponent),
+		updated: make(map[uint64]bool),
 	}
 }
 
 // SpriteList is a simple struct that contains and interacts with Sprites /
 // Entities.
 type EntityList struct {
-	lastEntityID      uint64
-	sprites           map[uint64]*Sprite
-	AIComponents      map[uint64]AI
-	PhysicsComponents map[uint64]*PhysicsComponent
+	lastEntityID uint64
+	sprites      map[uint64]*Sprite
+	ais          map[uint64]AI
+	physics      map[uint64]*PhysicsComponent
+	updated      map[uint64]bool
 }
 
 func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
@@ -30,54 +32,41 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	s.lastEntityID++
 	sprite.Id = s.lastEntityID
 	s.sprites[sprite.Id] = sprite
-	s.AIComponents[sprite.Id] = &AIDrunkard{state: "idle"}
-	s.PhysicsComponents[sprite.Id] = NewPhysicsComponent(x, y, 3.14/2)
-	return s.lastEntityID
+	s.ais[sprite.Id] = &AIDrunkard{state: "idle"}
+	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14/2)
+	s.updated[sprite.Id] = true
+	return sprite.Id
 }
 
 func (s *EntityList) SendAll(c *connection) {
 	t := &Message{
 		Topic:     "all",
-		Data:      s.All(),
+		Data:      s.all(),
 		Timestamp: float64(time.Now().UnixNano()) / 1000000,
 	}
 	msg, _ := bson.Marshal(t)
 	c.send <- msg
 }
 
-func (s *EntityList) All() []*EntityUpdate {
-	v := make([]*EntityUpdate, 0, len(s.sprites))
+func (s *EntityList) all() []*EntityUpdate {
+	entities := make([]*EntityUpdate, 0, len(s.sprites))
 	for id, spr := range s.sprites {
-		v = append(v, &EntityUpdate{
+		entities = append(entities, &EntityUpdate{
 			Id:          id,
-			X:           s.PhysicsComponents[id].Position.X,
-			Y:           s.PhysicsComponents[id].Position.Y,
-			Orientation: s.PhysicsComponents[id].Orientation,
+			X:           s.physics[id].Position.X,
+			Y:           s.physics[id].Position.Y,
+			Orientation: s.physics[id].Orientation,
 			Image:       spr.Image,
 		})
 	}
-	return v
+	return entities
 }
 
 func (s *EntityList) Update(w *World, duration, gameTime float64) {
 	for _, sprite := range s.sprites {
-		s.AIComponents[sprite.Id].Update(sprite, w, duration)
+		s.ais[sprite.Id].Update(sprite, w, duration)
 	}
 	for _, sprite := range s.sprites {
-		s.PhysicsComponents[sprite.Id].Update(sprite, w, duration)
+		s.physics[sprite.Id].Update(sprite, w, duration)
 	}
-}
-
-func (s *EntityList) Changed(reset bool) []*Sprite {
-	toSend := make([]*Sprite, 0)
-	for _, spr := range s.sprites {
-		if !spr.changed {
-			continue
-		}
-		toSend = append(toSend, spr)
-		if reset {
-			spr.changed = false
-		}
-	}
-	return toSend
 }

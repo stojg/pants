@@ -34,8 +34,8 @@ func (d *AIDrunkard) Flee(w *World, s *Sprite) {
 		return
 	}
 	o := w.rand.Float64() * math.Pi * 2
-	w.spriteList.PhysicsComponents[s.Id].Orientation = o
-	w.spriteList.PhysicsComponents[s.Id].Velocity = RadiansVec2(o).Multiply(100)
+	list.physics[s.Id].Orientation = o
+	list.physics[s.Id].Velocity = RadiansVec2(o).Multiply(100)
 	d.state = "flee"
 }
 
@@ -44,7 +44,7 @@ func (d *AIDrunkard) Idle(w *World, s *Sprite) {
 		return
 	}
 	d.state = "idle"
-	w.spriteList.PhysicsComponents[s.Id].Velocity = (&Vec2{0, 0})
+	list.physics[s.Id].Velocity = (&Vec2{0, 0})
 }
 
 func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
@@ -54,14 +54,14 @@ func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
 	}
 	rand := w.rand.Float32()
 	if rand > 0.75 {
-		w.spriteList.PhysicsComponents[s.Id].Orientation = (math.Pi / 2)
+		list.physics[s.Id].Orientation = (math.Pi / 2)
 	} else if rand > 0.50 {
-		w.spriteList.PhysicsComponents[s.Id].Orientation = (3 * math.Pi / 2)
+		list.physics[s.Id].Orientation = (3 * math.Pi / 2)
 	} else if rand > 0.25 {
-		w.spriteList.PhysicsComponents[s.Id].Orientation = math.Pi
+		list.physics[s.Id].Orientation = math.Pi
 	} else {
-		w.spriteList.PhysicsComponents[s.Id].Orientation = 0
+		list.physics[s.Id].Orientation = 0
 	}
-	vel := RadiansVec2(w.spriteList.PhysicsComponents[s.Id].Orientation).Multiply(10)
-	w.spriteList.PhysicsComponents[s.Id].Velocity = vel
+	vel := RadiansVec2(list.physics[s.Id].Orientation).Multiply(10)
+	list.physics[s.Id].Velocity = vel
 }

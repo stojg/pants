@@ -52,38 +52,31 @@ func (w *World) networkTick() {
 		w.netTick += 1
 		// Send a snapshot to all connections
 		changedSprites := make([]*EntityUpdate, 0)
-		for id, spr := range w.spriteList.sprites {
-			if !spr.changed {
-				continue
-			}
+		for id := range list.updated {
 			changedSprites = append(changedSprites, &EntityUpdate{
 				Id: id,
-				X: w.spriteList.PhysicsComponents[id].Position.X,
-				Y: w.spriteList.PhysicsComponents[id].Position.Y,
-				Orientation: w.spriteList.PhysicsComponents[id].Orientation,
-				Image: spr.Image,
+				X: w.spriteList.physics[id].Position.X,
+				Y: w.spriteList.physics[id].Position.Y,
+				Orientation: w.spriteList.physics[id].Orientation,
+				Image: list.sprites[id].Image,
 			})
-			spr.changed = false
+			delete(list.updated, id)
 		}
 
-		message := &Message{
+		h.Send(&Message{
 			Topic: "update",
 			Data: changedSprites,
 			Tick: w.gameTick,
 			Timestamp: float64(currentTime.UnixNano()) / 1000000,
-		}
-
-		h.Send(message)
+		})
 	}
 }
 
 func (w *World) worldTick() {
-
 	var gameTime float64
+	var accumulator float64
 	dt := 0.01
 	currentTime := time.Now()
-	var accumulator float64
-
 	for {
 		newTime := time.Now()
 		frameTime := newTime.Sub(currentTime).Seconds()

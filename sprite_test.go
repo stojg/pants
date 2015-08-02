@@ -27,11 +27,3 @@ func BenchmarkSpriteUpdate(b *testing.B) {
 		list.Update(w, 0.0016, 0.016)
 	}
 }
-
-func BenchmarkSpriteChanged(b *testing.B) {
-	list := NewEntityList()
-	list.NewEntity(0, 0, "sprite.png")
-	for n := 0; n < b.N; n++ {
-		list.Changed(false)
-	}
-}

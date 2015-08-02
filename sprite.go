@@ -11,12 +11,11 @@ type Sprite struct {
 	Image       string  `bson:",minsize,omitempty"`
 	Dead        bool
 	inputs      []*InputRequest
-	changed     bool
 }
 
 func (s *Sprite) Kill() {
 	s.Dead = true
-	s.changed = true
+	list.updated[s.Id] = true
 }
 
 func (s *Sprite) AddInput(i *InputRequest) {
