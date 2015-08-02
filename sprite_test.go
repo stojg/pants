@@ -8,7 +8,7 @@ func TestAddSprite(t *testing.T) {
 	list := NewSpriteList()
 	spriteID := list.NewSprite(0, 0, "sprite.png")
 	w := NewWorld(list)
-	list.Update(w, 0.016)
+	list.Update(w, 0.016, 0.016)
 	if spriteID != 1 {
 		t.Errorf("Could not get sprite id")
 	}
@@ -24,7 +24,7 @@ func BenchmarkSpriteUpdate(b *testing.B) {
 	w := NewWorld(list)
 
 	for n := 0; n < b.N; n++ {
-		list.Update(w, 0.0016)
+		list.Update(w, 0.0016, 0.016)
 	}
 }
 

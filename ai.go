@@ -9,7 +9,6 @@ type AI interface {
 }
 
 type AIDrunkard struct {
-	state string
 }
 
 func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
@@ -17,39 +16,39 @@ func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
 		switch input.Action {
 		case "mouseOver":
 			d.Flee(w, s)
-			return
 		case "mouseOut":
 			d.Idle(w, s)
-			return
 		case "clickUp":
 			s.Kill()
-			return
 		}
 	}
-	d.Stagger(w, s)
+	if len(s.inputs) == 0 {
+		d.Stagger(w, s)
+	}
+	s.inputs = s.inputs[0:0]
 }
 
 func (d *AIDrunkard) Flee(w *World, s *Sprite) {
-	if d.state == "flee" {
+	if s.State == "flee" {
 		return
 	}
 	o := w.rand.Float64() * math.Pi * 2
 	s.SetOrientation(o)
 	vel := RadiansVec2(o).Multiply(100)
 	s.SetVelocity(vel)
-	d.state = "flee"
+	s.State = "flee"
 }
 
 func (d *AIDrunkard) Idle(w *World, s *Sprite) {
-	if d.state == "idle" {
+	if s.State == "idle" {
 		return
 	}
-	d.state = "idle"
+	s.State = "idle"
 	s.SetVelocity(&Vec2{0, 0})
 }
 
 func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
-	d.state = "stagger"
+	s.State = "stagger"
 	if w.rand.Float32() < 0.99 {
 		return
 	}

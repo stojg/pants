@@ -1,7 +1,6 @@
 package main
 
-import (
-)
+import ()
 
 func init() {
 	list = NewSpriteList()
@@ -9,6 +8,7 @@ func init() {
 
 type Sprite struct {
 	Id          uint64 `bson:",minsize"`
+	State       string
 	AIs         []AI
 	X, Y        float64 `bson:",minsize,omitempty"`
 	Orientation float64 `bson:",minsize"`
