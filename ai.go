@@ -1,20 +1,18 @@
 package main
 
 import (
-	"log"
 	"math"
-	"time"
 )
 
 type AI interface {
-	Update(s *Sprite, w *World, t time.Duration)
+	Update(s *Sprite, w *World, t float64)
 }
 
 type AIDrunkard struct {
 	state string
 }
 
-func (d *AIDrunkard) Update(s *Sprite, w *World, t time.Duration) {
+func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
 	for _, input := range s.inputs {
 		switch input.Action {
 		case "mouseOver":
@@ -24,7 +22,6 @@ func (d *AIDrunkard) Update(s *Sprite, w *World, t time.Duration) {
 			d.Idle(w, s)
 			return
 		case "clickUp":
-			log.Printf("kill me %d", s.Id)
 			s.Kill()
 			return
 		}
@@ -33,18 +30,22 @@ func (d *AIDrunkard) Update(s *Sprite, w *World, t time.Duration) {
 }
 
 func (d *AIDrunkard) Flee(w *World, s *Sprite) {
-	if d.state != "flee" {
-		o := w.rand.Float64() * math.Pi * 2
-		s.SetOrientation(o)
-		vel := RadiansVec2(o).Multiply(100)
-		s.SetVelocity(vel)
-		d.state = "flee"
+	if d.state == "flee" {
+		return
 	}
+	o := w.rand.Float64() * math.Pi * 2
+	s.SetOrientation(o)
+	vel := RadiansVec2(o).Multiply(100)
+	s.SetVelocity(vel)
+	d.state = "flee"
 }
 
 func (d *AIDrunkard) Idle(w *World, s *Sprite) {
+	if d.state == "idle" {
+		return
+	}
 	d.state = "idle"
-	s.SetVelocity(&Vec2{0,0})
+	s.SetVelocity(&Vec2{0, 0})
 }
 
 func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
@@ -54,14 +55,15 @@ func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
 	}
 	rand := w.rand.Float32()
 	if rand > 0.75 {
-		s.Orientation = (3.14 / 2)
+		s.Orientation = (math.Pi / 2)
 	} else if rand > 0.50 {
-		s.Orientation = (3 * 3.14 / 2)
+		s.Orientation = (3 * math.Pi / 2)
 	} else if rand > 0.25 {
-		s.Orientation = 3.14
+		s.Orientation = math.Pi
 	} else {
 		s.Orientation = 0
 	}
 	vel := RadiansVec2(s.Orientation).Multiply(10)
-	s.SetVelocity(vel)
+	s.velocity.X = vel.X
+	s.velocity.Y = vel.Y
 }

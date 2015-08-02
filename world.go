@@ -7,7 +7,7 @@ import (
 )
 
 const NetFPS = 50 * time.Millisecond
-const FPS = 16 * time.Millisecond
+const FPS = 20 * time.Millisecond
 
 func NewWorld(list *SpriteList) *World {
 	current := time.Now()
@@ -50,21 +50,30 @@ func (w *World) networkTick() {
 }
 
 func (w *World) worldTick() {
-	ticker := time.NewTicker(FPS)
-	for currentTime := range ticker.C {
-		duration := currentTime.Sub(w.gameTicked)
-		if duration-FPS > 4*time.Millisecond {
-			log.Printf("world is lagging %s", duration-FPS)
+
+//	t := 0.0
+	dt := 0.01
+	currentTime := time.Now()
+	var accumulator float64
+
+	for {
+		newTime := time.Now()
+		frameTime := newTime.Sub(currentTime)
+		currentTime = newTime
+
+		if frameTime > 10*time.Millisecond {
+			log.Printf("world is lagging %s", frameTime)
 		}
-		w.gameTicked = currentTime
-		w.gameTick += 1
+
+		accumulator += frameTime.Seconds()
+		for accumulator >= dt {
+			// Individual entities
+			w.spriteList.Update(w, dt)
+			accumulator -= (dt)
+		}
 
 		// world AI
-		w.director.Update(w, duration)
-
-		// Individual entities
-		for _, sprite := range w.spriteList.sprites {
-			sprite.Update(w, duration)
-		}
+		w.director.Update(w, dt)
 	}
+
 }

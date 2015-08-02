@@ -1,7 +1,6 @@
 package main
 
 import (
-	"time"
 	//	"log"
 	"log"
 )
@@ -9,8 +8,8 @@ import (
 type Director struct {
 }
 
-func (director *Director) Update(w *World, duration time.Duration) {
-	if w.rand.Float32() > 0.99 {
+func (director *Director) Update(w *World, t float64 ) {
+	if w.rand.Float32() > 0.9999999 {
 		w.spriteList.NewSprite(
 			w.rand.Float64()*800,
 			w.rand.Float64()*600,
