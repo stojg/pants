@@ -5,7 +5,7 @@ import (
 	"runtime"
 )
 
-var list *SpriteList
+var list *EntityList
 
 func main() {
 	nCPU := runtime.NumCPU()

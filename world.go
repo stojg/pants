@@ -8,7 +8,7 @@ import (
 
 const NetFPS = 50 * time.Millisecond
 
-func NewWorld(list *SpriteList) *World {
+func NewWorld(list *EntityList) *World {
 	current := time.Now()
 	return &World{
 		netTicked:  current,
@@ -24,9 +24,16 @@ type World struct {
 	netTick    uint64
 	gameTicked time.Time
 	gameTick   uint64
-	spriteList *SpriteList
+	spriteList *EntityList
 	rand       *rand.Rand
 	director   *Director
+}
+
+type EntityUpdate struct {
+	Id          uint64 `bson:",minsize"`
+	X, Y        float64 `bson:",minsize,omitempty"`
+	Orientation float64 `bson:",minsize"`
+	Image       string  `bson:",minsize,omitempty"`
 }
 
 func (w *World) Run() {
@@ -44,7 +51,29 @@ func (w *World) networkTick() {
 		w.netTicked = currentTime
 		w.netTick += 1
 		// Send a snapshot to all connections
-		h.Send(&Message{Topic: "update", Data: w.spriteList.Changed(true), Tick: w.gameTick, Timestamp: float64(time.Now().UnixNano()) / 1000000})
+		changedSprites := make([]*EntityUpdate, 0)
+		for id, spr := range w.spriteList.sprites {
+			if !spr.changed {
+				continue
+			}
+			changedSprites = append(changedSprites, &EntityUpdate{
+				Id: id,
+				X: w.spriteList.PhysicsComponents[id].Position.X,
+				Y: w.spriteList.PhysicsComponents[id].Position.Y,
+				Orientation: w.spriteList.PhysicsComponents[id].Orientation,
+				Image: spr.Image,
+			})
+			spr.changed = false
+		}
+
+		message := &Message{
+			Topic: "update",
+			Data: changedSprites,
+			Tick: w.gameTick,
+			Timestamp: float64(currentTime.UnixNano()) / 1000000,
+		}
+
+		h.Send(message)
 	}
 }
 

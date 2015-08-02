@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"math"
+)
 
 func TestRadiansToVec2(t *testing.T) {
 	actual := RadiansVec2(0)
@@ -10,6 +13,47 @@ func TestRadiansToVec2(t *testing.T) {
 	}
 	if actual.Y != expected.Y {
 		t.Errorf("expected %f, got %f", expected.Y, actual.Y)
+	}
+}
+
+func TestEquals(t *testing.T) {
+	a := &Vec2{0,0}
+	b := &Vec2{0,0}
+	if !a.Equals(b) {
+		t.Errorf("Equals not working")
+	}
+	a.X=1
+	b.X=1
+	if !a.Equals(b) {
+		t.Errorf("Equals not working")
+	}
+
+	b.X = 1
+	a.X = 0
+	if a.Equals(b) {
+		t.Errorf("Equals not working a.X %f = b.X %f diffX %f", a.X, b.X, math.Abs(a.X-b.X))
+		t.Errorf("Equals not working a.Y %f = b.Y %f diffY %f", a.Y, b.Y, math.Abs(a.Y-b.Y))
+	}
+
+	b.X = 0
+	a.X = 1
+	if a.Equals(b) {
+		t.Errorf("Equals not working %f = %f %f", a.X, b.X, math.Abs(a.X-b.X))
+	}
+
+	a.X = 1
+	a.Y = 0
+	b.X = 1
+	b.Y = 1
+	if a.Equals(b) {
+		t.Errorf("Equals not working a.X %f = b.X %f diffX %f", a.X, b.X, math.Abs(a.X-b.X))
+		t.Errorf("Equals not working a.Y %f = b.Y %f diffY %f", a.Y, b.Y, math.Abs(a.Y-b.Y))
+	}
+
+	a.Y = 1
+	b.Y = 0
+	if a.Equals(b) {
+		t.Errorf("Equals not  working %f", math.Abs(a.Y-b.Y))
 	}
 }
 

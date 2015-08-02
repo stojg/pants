@@ -3,7 +3,7 @@ package main
 type Message struct {
 	Tick      uint64
 	Topic     string
-	Data      []*Sprite
+	Data      []*EntityUpdate
 	Timestamp float64
 }
 
