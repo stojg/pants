@@ -1,15 +1,9 @@
 $(document).ready(function () {
-	var baseUrl = location.href.split('?')[0],
-		params,
-		select = document.getElementById('version'),
-		themeSelect = document.getElementById('theme'),
-		editor;
+	var params;
 
 	params = App.getUrlParams();
 
 	document.title = 'pixi.js - ' + params.title;
-
-
 		console.log('Loading local pixi');
 		App.loadPixi('/js/vendor/pixi.min.js',onPixiLoaded);
 

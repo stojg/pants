@@ -14,7 +14,8 @@ func NewWorld(list *EntityList) *World {
 		netTicked:  current,
 		gameTicked: current,
 		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
-		spriteList: list,
+//		rand:       rand.New(rand.NewSource(1)),
+		entities: list,
 		director:   &Director{},
 	}
 }
@@ -24,7 +25,7 @@ type World struct {
 	netTick    uint64
 	gameTicked time.Time
 	gameTick   uint64
-	spriteList *EntityList
+	entities *EntityList
 	rand       *rand.Rand
 	director   *Director
 }
@@ -55,9 +56,9 @@ func (w *World) networkTick() {
 		for id := range list.updated {
 			changedSprites = append(changedSprites, &EntityUpdate{
 				Id: id,
-				X: w.spriteList.physics[id].Position.X,
-				Y: w.spriteList.physics[id].Position.Y,
-				Orientation: w.spriteList.physics[id].Orientation,
+				X: w.entities.physics[id].Position.X,
+				Y: w.entities.physics[id].Position.Y,
+				Orientation: w.entities.physics[id].Orientation,
 				Image: list.sprites[id].Image,
 			})
 			delete(list.updated, id)
@@ -89,7 +90,7 @@ func (w *World) worldTick() {
 		accumulator += frameTime
 		for accumulator >= dt {
 			// Individual entities
-			w.spriteList.Update(w, dt, gameTime)
+			w.entities.Update(w, dt, gameTime)
 			accumulator -= (dt)
 			gameTime += dt
 		}

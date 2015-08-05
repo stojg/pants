@@ -11,12 +11,14 @@ var interactive = true;
 var container = new PIXI.Container(0x66FF99, interactive);
 stage.addChild(container);
 
-/*
- * All the bunnies are added to the container with the addChild method
- * when you do this, all the bunnies become children of the container, and when a container moves,
- * so do all its children.
- * This gives you a lot of flexibility and makes it easier to position elements on the screen
- */
+var graphics = {
+	stage: stage,
+	graphGraphics: container,
+	domContainer: renderer.view,
+	renderer: renderer
+};
+
+
 container.x = 0;
 container.y = 0;
 
@@ -86,8 +88,8 @@ function update() {
 		var coefficient = (now - currentTimestamp) / (nextTimestamp - currentTimestamp);
 		var t = linearInterpolation(sprite.snapshots[0], sprite.snapshots[1], coefficient);
 
-		sprite.height = 20;
-		sprite.width = 20;
+		sprite.height = 10;
+		sprite.width = 10;
 		sprite.rotation = t.orientation;
 		sprite.x = t.x;
 		sprite.y = t.y;
@@ -125,6 +127,8 @@ function handleMessage(msg) {
 			sprites[snapshot.id].y = snapshot.y;
 			sprites[snapshot.id].anchor.x = 0.5;
 			sprites[snapshot.id].anchor.y = 0.5;
+			sprites[snapshot.id].height = 10;
+			sprites[snapshot.id].width = 10;
 
 			sprites[snapshot.id].interactive = true;
 			sprites[snapshot.id]
@@ -169,7 +173,7 @@ if (window["WebSocket"]) {
 			var reader = new FileReader();
 			reader.onload = function () {
 				var sprites = new Uint8Array(this.result);
-				handleMessage(BSON.deserialize(sprites))
+				handleMessage(BSON.deserialize(sprites));
 			};
 			reader.readAsArrayBuffer(evt.data);
 		}
@@ -181,10 +185,37 @@ if (window["WebSocket"]) {
 		var msg = {"topic": "time_request", "client": window.performance.now()};
 		var serialisedMsg = BSON.serialize(msg, false, true, false);
 		conn.send(serialisedMsg);
+		mouse(graphics);
 	}
 } else {
 	console.log('Your browser does not support WebSockets');
 }
+
+var mouse = function (graphics) {
+
+	var graphGraphics = graphics.graphGraphics;
+
+	addWheelListener(graphics.domContainer, function (e) {
+		zoom(e.clientX, e.clientY, e.deltaY < 0);
+	});
+
+	//addDragNDrop();
+	function zoom(x, y, isZoomIn) {
+		direction = isZoomIn ? 1 : -1;
+		var factor = (1 + direction * 0.01);
+		graphGraphics.scale.x *= factor;
+		graphGraphics.scale.y *= factor;
+		console.log(graphics.stage.getMousePosition());
+		// Technically code below is not required, but helps to zoom on mouse
+		// cursor, instead center of graphGraphics coordinates
+		//var beforeTransform = getGraphCoordinates(x, y);
+		graphGraphics.updateTransform();
+		//var afterTransform = getGraphCoordinates(x, y);
+		//graphGraphics.position.x += (afterTransform.x - beforeTransform.x) * graphGraphics.scale.x;
+		//graphGraphics.position.y += (afterTransform.y - beforeTransform.y) * graphGraphics.scale.y;
+		graphGraphics.updateTransform();
+	}
+};
 
 function mouseDown() {
 	this.down = true;
@@ -215,5 +246,4 @@ function mouseOut() {
 	var serialisedMsg = BSON.serialize(msg, false, true, false);
 	conn.send(serialisedMsg);
 }
-
 

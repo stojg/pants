@@ -10,9 +10,13 @@ type AI interface {
 
 type AIDrunkard struct {
 	state string
+	steering Steering
 }
 
 func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
+
+	w.entities.physics[s.Id].forces = &Vec2{0,10}
+
 	for _, input := range s.inputs {
 		switch input.Action {
 		case "mouseOver":
@@ -24,7 +28,7 @@ func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
 		}
 	}
 	if len(s.inputs) == 0 {
-		d.Stagger(w, s)
+		d.Stagger(w, s, t)
 	}
 	s.inputs = s.inputs[0:0]
 }
@@ -34,8 +38,8 @@ func (d *AIDrunkard) Flee(w *World, s *Sprite) {
 		return
 	}
 	o := w.rand.Float64() * math.Pi * 2
-	list.physics[s.Id].Orientation = o
-	list.physics[s.Id].Velocity = RadiansVec2(o).Multiply(100)
+	w.entities.physics[s.Id].Orientation = o
+	w.entities.physics[s.Id].forces = RadiansVec2(o).Multiply(10)
 	d.state = "flee"
 }
 
@@ -44,24 +48,24 @@ func (d *AIDrunkard) Idle(w *World, s *Sprite) {
 		return
 	}
 	d.state = "idle"
-	list.physics[s.Id].Velocity = (&Vec2{0, 0})
+	w.entities.physics[s.Id].forces = (&Vec2{0, 0})
 }
 
-func (d *AIDrunkard) Stagger(w *World, s *Sprite) {
-	d.state = "stagger"
-	if w.rand.Float32() < 0.99 {
-		return
+func (d *AIDrunkard) Stagger(w *World, s *Sprite, duration float64) {
+
+	if d.state != "stagger" {
+		d.state = "stagger"
+		d.steering = &Arrive{
+			source: w.entities.physics[s.Id],
+			target: &PhysicsComponent{
+				Position: &Vec2{X:w.rand.Float64()*800, Y:w.rand.Float64()*600},
+			},
+			targetRadius: 1,
+			slowRadius: 300,
+		}
 	}
-	rand := w.rand.Float32()
-	if rand > 0.75 {
-		list.physics[s.Id].Orientation = (math.Pi / 2)
-	} else if rand > 0.50 {
-		list.physics[s.Id].Orientation = (3 * math.Pi / 2)
-	} else if rand > 0.25 {
-		list.physics[s.Id].Orientation = math.Pi
-	} else {
-		list.physics[s.Id].Orientation = 0
-	}
-	vel := RadiansVec2(list.physics[s.Id].Orientation).Multiply(10)
-	list.physics[s.Id].Velocity = vel
+	output := d.steering.Get(duration)
+	w.entities.physics[s.Id].AddForce(output.linear.Scale(w.entities.physics[s.Id].Mass()))
+	w.entities.physics[s.Id].rotations = output.angular
+
 }

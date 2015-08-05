@@ -33,7 +33,10 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	sprite.Id = s.lastEntityID
 	s.sprites[sprite.Id] = sprite
 	s.ais[sprite.Id] = &AIDrunkard{state: "idle"}
-	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14/2)
+	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14*2)
+	s.physics[sprite.Id].setMass(10)
+	s.physics[sprite.Id].setDamping(0.99)
+	s.physics[sprite.Id].setAcceleration(&Vec2{0,10})
 	s.updated[sprite.Id] = true
 	return sprite.Id
 }
