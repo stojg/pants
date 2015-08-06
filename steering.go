@@ -1,6 +1,7 @@
 package main
 import (
 //	"log"
+	. "github.com/stojg/pants/vector"
 )
 
 func NewSteeringOutput() *SteeringOutput {

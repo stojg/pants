@@ -1,6 +1,7 @@
 package main
 
 import (
+	. "github.com/stojg/pants/vector"
 	"labix.org/v2/mgo/bson"
 	"time"
 )

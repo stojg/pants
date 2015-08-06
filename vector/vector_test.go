@@ -1,8 +1,8 @@
-package main
+package vector
 
 import (
-	"testing"
 	"math"
+	"testing"
 )
 
 func TestRadiansToVec2(t *testing.T) {
@@ -17,13 +17,13 @@ func TestRadiansToVec2(t *testing.T) {
 }
 
 func TestEquals(t *testing.T) {
-	a := &Vec2{0,0}
-	b := &Vec2{0,0}
+	a := &Vec2{0, 0}
+	b := &Vec2{0, 0}
 	if !a.Equals(b) {
 		t.Errorf("Equals not working")
 	}
-	a.X=1
-	b.X=1
+	a.X = 1
+	b.X = 1
 	if !a.Equals(b) {
 		t.Errorf("Equals not working")
 	}

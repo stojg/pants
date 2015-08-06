@@ -1,4 +1,4 @@
-package main
+package vector
 
 import (
 	"math"
@@ -96,4 +96,3 @@ func (a *Vec2) Scale(alpha float64) *Vec2 {
 func (v *Vec2) ToOrientation() float64 {
 	return math.Atan2(v.X, -v.Y)
 }
-
