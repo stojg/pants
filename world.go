@@ -14,9 +14,9 @@ func NewWorld(list *EntityList) *World {
 		netTicked:  current,
 		gameTicked: current,
 		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
-//		rand:       rand.New(rand.NewSource(1)),
+		//		rand:       rand.New(rand.NewSource(1)),
 		entities: list,
-		director:   &Director{},
+		director: &Director{},
 	}
 }
 
@@ -25,16 +25,17 @@ type World struct {
 	netTick    uint64
 	gameTicked time.Time
 	gameTick   uint64
-	entities *EntityList
+	entities   *EntityList
 	rand       *rand.Rand
 	director   *Director
 }
 
 type EntityUpdate struct {
-	Id          uint64 `bson:",minsize"`
+	Id          uint64  `bson:",minsize"`
 	X, Y        float64 `bson:",minsize,omitempty"`
 	Orientation float64 `bson:",minsize"`
 	Image       string  `bson:",minsize,omitempty"`
+	Type        string  `bson:",minsize,omitempty"`
 }
 
 func (w *World) Run() {
@@ -55,21 +56,23 @@ func (w *World) networkTick() {
 		changedSprites := make([]*EntityUpdate, 0)
 		for id := range list.updated {
 			changedSprites = append(changedSprites, &EntityUpdate{
-				Id: id,
-				X: w.entities.physics[id].Position.X,
-				Y: w.entities.physics[id].Position.Y,
+				Id:          id,
+				X:           w.entities.physics[id].Position.X,
+				Y:           w.entities.physics[id].Position.Y,
 				Orientation: w.entities.physics[id].Orientation,
-				Image: list.sprites[id].Image,
+				Image:       list.sprites[id].Image,
 			})
 			delete(list.updated, id)
 		}
 
-		h.Send(&Message{
-			Topic: "update",
-			Data: changedSprites,
-			Tick: w.gameTick,
-			Timestamp: float64(currentTime.UnixNano()) / 1000000,
-		})
+		if len(changedSprites) > 0 {
+			h.Send(&Message{
+				Topic:     "update",
+				Data:      changedSprites,
+				Tick:      w.gameTick,
+				Timestamp: float64(currentTime.UnixNano()) / 1000000,
+			})
+		}
 	}
 }
 

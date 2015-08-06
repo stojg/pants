@@ -37,9 +37,15 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14*2)
 	s.physics[sprite.Id].setMass(10)
 	s.physics[sprite.Id].setDamping(0.99)
-	s.physics[sprite.Id].setAcceleration(&Vec2{0,10})
+	s.physics[sprite.Id].setAcceleration(&Vec2{0, 10})
 	s.updated[sprite.Id] = true
 	return sprite.Id
+}
+
+func (s *EntityList) Add(e *Sprite) {
+	s.lastEntityID++
+	e.Id = s.lastEntityID
+	s.sprites[s.lastEntityID] = e
 }
 
 func (s *EntityList) SendAll(c *connection) {

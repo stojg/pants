@@ -1,15 +1,16 @@
 package main
+
 import (
-//	"log"
 	. "github.com/stojg/pants/vector"
 )
 
 func NewSteeringOutput() *SteeringOutput {
 	return &SteeringOutput{
-		linear: &Vec2{},
+		linear:  &Vec2{},
 		angular: 0,
 	}
 }
+
 type SteeringOutput struct {
 	linear  *Vec2
 	angular float64
@@ -25,7 +26,7 @@ type Seek struct {
 }
 
 func (s Seek) Get(dt float64) *SteeringOutput {
-	steering :=  NewSteeringOutput();
+	steering := NewSteeringOutput()
 	// Get the direction to the target
 	steering.linear = s.target.Position.Clone().Sub(s.source.Position)
 	// Go full speed ahead
@@ -34,18 +35,18 @@ func (s Seek) Get(dt float64) *SteeringOutput {
 }
 
 type Arrive struct {
-	source       *PhysicsComponent
-	target       *PhysicsComponent
+	source *PhysicsComponent
+	target *PhysicsComponent
 	// Holds the radius that says we are at the target
 	targetRadius float64
 	// Start slowing down at this radius
-	slowRadius   float64
+	slowRadius float64
 	// How fast we are trying to get to the target, 0.1
 	timeToTarget float64
 }
 
 func (s Arrive) Get(dt float64) *SteeringOutput {
-	steering := NewSteeringOutput();
+	steering := NewSteeringOutput()
 
 	direction := s.target.Position.Clone().Sub(s.source.Position)
 	distance := direction.Length()

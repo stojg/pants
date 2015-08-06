@@ -10,13 +10,13 @@ type AI interface {
 }
 
 type AIDrunkard struct {
-	state string
+	state    string
 	steering Steering
 }
 
 func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
 
-	w.entities.physics[s.Id].forces = &Vec2{0,10}
+	w.entities.physics[s.Id].forces = &Vec2{0, 10}
 
 	for _, input := range s.inputs {
 		switch input.Action {
@@ -59,10 +59,10 @@ func (d *AIDrunkard) Stagger(w *World, s *Sprite, duration float64) {
 		d.steering = &Arrive{
 			source: w.entities.physics[s.Id],
 			target: &PhysicsComponent{
-				Position: &Vec2{X:w.rand.Float64()*800, Y:w.rand.Float64()*600},
+				Position: &Vec2{X: w.rand.Float64() * 800, Y: w.rand.Float64() * 600},
 			},
 			targetRadius: 1,
-			slowRadius: 300,
+			slowRadius:   300,
 		}
 	}
 	output := d.steering.Get(duration)

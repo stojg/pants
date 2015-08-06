@@ -7,10 +7,10 @@ func init() {
 }
 
 type Sprite struct {
-	Id          uint64 `bson:",minsize"`
-	Image       string  `bson:",minsize,omitempty"`
-	Dead        bool
-	inputs      []*InputRequest
+	Id     uint64 `bson:",minsize"`
+	Image  string `bson:",minsize,omitempty"`
+	Dead   bool
+	inputs []*InputRequest
 }
 
 func (s *Sprite) Kill() {

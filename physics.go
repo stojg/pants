@@ -3,7 +3,6 @@ package main
 import (
 	. "github.com/stojg/pants/vector"
 	"math"
-//	"log"
 )
 
 func NewPhysicsComponent(x, y, orientation float64) *PhysicsComponent {
@@ -29,14 +28,14 @@ func NewPhysicsComponent(x, y, orientation float64) *PhysicsComponent {
 }
 
 type PhysicsComponent struct {
-	Position           *Vec2
-	prevPosition       *Vec2
-	Velocity           *Vec2
-	maxVelocity        float64
-	forces             *Vec2
-	maxAcceleration    float64
+	Position        *Vec2
+	prevPosition    *Vec2
+	Velocity        *Vec2
+	maxVelocity     float64
+	forces          *Vec2
+	maxAcceleration float64
 
-	acceleration       *Vec2
+	acceleration *Vec2
 
 	Orientation        float64
 	prevOrientation    float64
@@ -44,10 +43,10 @@ type PhysicsComponent struct {
 	rotations          float64
 	maxAngularVelocity float64
 
-	forceAccum         *Vec2
-	invMass            float64
+	forceAccum *Vec2
+	invMass    float64
 
-	damping            float64
+	damping float64
 }
 
 func (c *PhysicsComponent) Update(sprite *Sprite, w *World, seconds float64) {
@@ -95,11 +94,11 @@ func (c *PhysicsComponent) integrate(sprite *Sprite, duration float64) {
 }
 
 func (c *PhysicsComponent) Mass() float64 {
-	return 1/c.invMass
+	return 1 / c.invMass
 }
 
 func (c *PhysicsComponent) setMass(m float64) {
-	c.invMass = 1/m
+	c.invMass = 1 / m
 }
 
 func (c *PhysicsComponent) setDamping(d float64) {

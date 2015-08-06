@@ -61,7 +61,7 @@ func TestSeekWillMove(t *testing.T) {
 			X: 0,
 			Y: 0,
 		},
-		Velocity: &Vec2{},
+		Velocity:    &Vec2{},
 		maxVelocity: 10,
 	}
 	arrive.target = &PhysicsComponent{

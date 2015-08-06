@@ -9,14 +9,14 @@ type Director struct {
 	lastAction float64
 }
 
-func (director *Director) Update(w *World, frameTime, gameTime float64 ) {
+func (director *Director) Update(w *World, frameTime, gameTime float64) {
 
-	if gameTime - director.lastAction < 0.1 {
+	if gameTime-director.lastAction < 0.1 {
 		return
 	}
 
-	if len(list.sprites) >= 100  {
-		return;
+	if len(list.sprites) >= 1 {
+		return
 	}
 	director.lastAction = gameTime
 	w.entities.NewEntity(
