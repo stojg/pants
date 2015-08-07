@@ -31,11 +31,12 @@ type World struct {
 }
 
 type EntityUpdate struct {
-	Id          uint64  `bson:",minsize"`
-	X, Y        float64 `bson:",minsize,omitempty"`
-	Orientation float64 `bson:",minsize"`
-	Image       string  `bson:",minsize,omitempty"`
-	Type        string  `bson:",minsize,omitempty"`
+	Id          uint64            `bson:",minsize"`
+	X, Y        float64           `bson:",minsize,omitempty"`
+	Orientation float64           `bson:",minsize"`
+	Type        string            `bson:",minsize,omitempty"`
+	Dead        bool              `bson:",minsize,omitempty"`
+	Data        map[string]string `bson:",minsize,omitempty"`
 }
 
 func (w *World) Run() {
@@ -60,7 +61,11 @@ func (w *World) networkTick() {
 				X:           w.entities.physics[id].Position.X,
 				Y:           w.entities.physics[id].Position.Y,
 				Orientation: w.entities.physics[id].Orientation,
-				Image:       list.sprites[id].Image,
+				Type:        w.entities.sprites[id].Type,
+				Dead:        w.entities.sprites[id].Dead,
+				Data: map[string]string{
+					"Image": list.sprites[id].Image,
+				},
 			})
 			delete(list.updated, id)
 		}

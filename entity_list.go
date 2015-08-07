@@ -28,6 +28,7 @@ type EntityList struct {
 func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	sprite := &Sprite{}
 	sprite.Dead = false
+	sprite.Type = "sprite"
 	sprite.Image = image
 	sprite.inputs = make([]*InputRequest, 0)
 	s.lastEntityID++
@@ -61,12 +62,17 @@ func (s *EntityList) SendAll(c *connection) {
 func (s *EntityList) all() []*EntityUpdate {
 	entities := make([]*EntityUpdate, 0, len(s.sprites))
 	for id, spr := range s.sprites {
+
+		data := make(map[string]string)
+		data["Image"] = spr.Image
 		entities = append(entities, &EntityUpdate{
 			Id:          id,
+			Type:        "sprite",
 			X:           s.physics[id].Position.X,
 			Y:           s.physics[id].Position.Y,
 			Orientation: s.physics[id].Orientation,
-			Image:       spr.Image,
+			Data:        data,
+			Dead:        s.sprites[id].Dead,
 		})
 	}
 	return entities

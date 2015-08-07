@@ -75,24 +75,43 @@ function update() {
 		}
 		var sprite = sprites[key];
 
-		var now = window.performance.now() - interpolationDelay;
-		var currentTimestamp = timeDiff + sprite.snapshots[0].timestamp;
+		var now = window.performance.now() - latency;
 
 		// wait until we have enough snapshots
 		if (sprite.snapshots.length < 2) {
 			continue;
 		}
 
+		var currentTimestamp = timeDiff + sprite.snapshots[0].timestamp;
 		var nextTimestamp = timeDiff + sprite.snapshots[1].timestamp;
 
 		var coefficient = (now - currentTimestamp) / (nextTimestamp - currentTimestamp);
-		var t = linearInterpolation(sprite.snapshots[0], sprite.snapshots[1], coefficient);
+		var position = linearInterpolation(sprite.snapshots[0], sprite.snapshots[1], coefficient);
 
-		sprite.height = 10;
-		sprite.width = 10;
-		sprite.rotation = t.orientation;
-		sprite.x = t.x;
-		sprite.y = t.y;
+		//console.log(sprite.type);
+		if(sprite.type === 'graphics') {
+			//sprite.clear();
+			sprite.clear();
+			sprite.lineStyle(1, 0xffffff, 1);
+			sprite.beginFill(0xffffff, 1);
+			sprite.moveTo(position.x, position.y);
+			//console.log(sprite.snapshots[0].data.toX);
+			sprite.lineTo(Number(sprite.snapshots[0].data.toX), Number(sprite.snapshots[0].data.toY));
+			//console.log(Number(sprite.snapshots[0].data.toX*10), position.x);
+			//console.log(sprite.snapshots[0].data.toX, sprite.snapshots[0].data.toY);
+			//sprite.lineTo(0, 0);
+			//sprite.moveTo(t.x, t.y);
+			//console.log(t.data);
+		} else {
+			sprite.x = position.x;
+			sprite.y = position.y;
+			sprite.rotation = position.orientation;
+			sprite.height = 20;
+			sprite.width = 20;
+		}
+
+
+
 
 		// we passed the time for the next timestamp
 		if (coefficient > 1) {
@@ -117,49 +136,76 @@ function handleMessage(msg) {
 		if (!data.hasOwnProperty(key)) {
 			continue;
 		}
-		var snapshot = data[key];
-		if (typeof sprites[snapshot.id] === "undefined") {
-			var texture = PIXI.Texture.fromImage(snapshot.image, true, PIXI.SCALE_MODES.LINEAR);
-			var bunny = new PIXI.Sprite(texture);
-			sprites[snapshot.id] = bunny;
-			sprites[snapshot.id].id = snapshot.id;
-			sprites[snapshot.id].x = snapshot.x;
-			sprites[snapshot.id].y = snapshot.y;
-			sprites[snapshot.id].anchor.x = 0.5;
-			sprites[snapshot.id].anchor.y = 0.5;
-			sprites[snapshot.id].height = 10;
-			sprites[snapshot.id].width = 10;
 
-			sprites[snapshot.id].interactive = true;
-			sprites[snapshot.id]
-				// set the mouse down and touch start callback...
-				.on('mousedown', mouseDown)
-				.on('touchstart', mouseDown)
-				// set the mouse up and touch end callback...
-				.on('mouseup', mouseUp)
-				.on('touchend', mouseUp)
-				.on('mouseupoutside', mouseUp)
-				.on('touchendoutside', mouseUp)
-				// set the mouse over callback...
-				.on('mouseover', mouseOver)
-				// set the mouse out callback...
-				.on('mouseout', mouseOut);
-			// @todo: this should probably be in the sprites update()
-			container.addChild(bunny);
-			sprites[snapshot.id].snapshots = [];
+		// create new sprite
+		if (typeof sprites[data[key].id] === "undefined") {
+			var sprite;
+			if(data[key].type === "sprite") {
+				sprite = createSprite(data[key]);
+			} else if (data[key].type === 'graphics') {
+				sprite = createGraphic(data[key]);
+			} else {
+				console.log("unknown type " + data[key].type);
+			}
+			console.log("created " + sprite.id);
+			container.addChild(sprite);
+			sprites[sprite.id] = sprite;
+			sprites[sprite.id].snapshots = [];
 		}
 
-		if(snapshot.dead) {
-			container.removeChild(sprites[snapshot.id]);
+		if(data[key].dead) {
+			container.removeChild(sprites[data[key].id]);
+			delete(sprites[data[key].id]);
+			continue;
 		}
 
-		snapshot.timestamp = msg.timestamp;
+		data[key].timestamp = msg.timestamp;
+		sprites[data[key].id].snapshots.push(data[key]);
 
-		// biggest size of the queue is 20 history items
-		sprites[snapshot.id].snapshots.push(snapshot);
-		if (sprites[snapshot.id].snapshots.length > maxSnapshotBuffer) {
-			sprites[snapshot.id].snapshots.shift();
+		if(typeof sprites[data[key].id] !== 'undefined') {
+			while(sprites[data[key].id].snapshots.length > maxSnapshotBuffer) {
+				sprites[data[key].id].snapshots.shift();
+			}
 		}
+	}
+
+	function createGraphic(entity) {
+		var graphic = new PIXI.Graphics();
+		graphic.id = entity.id;
+		graphic.type = "graphics";
+
+		return graphic;
+	}
+
+	function createSprite(entity) {
+		var data = entity.data;
+		var texture = PIXI.Texture.fromImage(data.Image, true, PIXI.SCALE_MODES.LINEAR);
+		var bunny = new PIXI.Sprite(texture);
+		//sprites[snapshot.id] = bunny;
+		bunny.id = entity.id;
+		bunny.type = "sprite";
+		bunny.x = entity.x;
+		bunny.y = entity.y;
+		bunny.anchor.x = 0.5;
+		bunny.anchor.y = 0.5;
+		bunny.height = 20;
+		bunny.width = 20;
+
+		bunny.interactive = true;
+		bunny
+			// set the mouse down and touch start callback...
+			.on('mousedown', mouseDown)
+			.on('touchstart', mouseDown)
+			// set the mouse up and touch end callback...
+			.on('mouseup', mouseUp)
+			.on('touchend', mouseUp)
+			.on('mouseupoutside', mouseUp)
+			.on('touchendoutside', mouseUp)
+			// set the mouse over callback...
+			.on('mouseover', mouseOver)
+			// set the mouse out callback...
+			.on('mouseout', mouseOut);
+		return bunny;
 	}
 }
 

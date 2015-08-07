@@ -11,6 +11,7 @@ type Sprite struct {
 	Image  string `bson:",minsize,omitempty"`
 	Dead   bool
 	inputs []*InputRequest
+	Type string
 }
 
 func (s *Sprite) Kill() {
