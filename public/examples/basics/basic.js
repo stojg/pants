@@ -205,7 +205,7 @@ var mouse = function (graphics) {
 		var factor = (1 + direction * 0.01);
 		graphGraphics.scale.x *= factor;
 		graphGraphics.scale.y *= factor;
-		console.log(graphics.stage.getMousePosition());
+		//console.log(graphics.stage.getMousePosition());
 		// Technically code below is not required, but helps to zoom on mouse
 		// cursor, instead center of graphGraphics coordinates
 		//var beforeTransform = getGraphCoordinates(x, y);
