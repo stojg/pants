@@ -164,7 +164,7 @@ function handleMessage(msg) {
 }
 
 if (window["WebSocket"]) {
-	conn = new WebSocket("ws://localhost:8081/ws");
+	conn = new WebSocket("ws://"+document.location.host+"/ws");
 	conn.binaryType = "blob";
 	conn.onclose = function (evt) {
 	};
