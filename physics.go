@@ -49,9 +49,17 @@ type PhysicsComponent struct {
 	damping float64
 }
 
-func (c *PhysicsComponent) Update(sprite *Sprite, w *World, seconds float64) {
+func (c *PhysicsComponent) Update(sprite *Sprite, w *World, duration float64) {
 
-	c.integrate(sprite, seconds)
+	if c.Velocity.Length() > 1 {
+		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
+	}
+
+	if c.forces.Length() > 1 {
+		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10)))
+	}
+
+	c.integrate(sprite, duration)
 
 	// mark as updated
 	if !c.Position.Equals(c.prevPosition) {

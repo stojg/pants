@@ -1,9 +1,16 @@
 package main
 
-import ()
+import (
+	. "github.com/stojg/pants/vector"
+)
 
 func init() {
 	list = NewEntityList()
+}
+
+type Line struct {
+	Position *Vec2
+	End      *Vec2
 }
 
 type Sprite struct {
@@ -11,7 +18,7 @@ type Sprite struct {
 	Image  string `bson:",minsize,omitempty"`
 	Dead   bool
 	inputs []*InputRequest
-	Type string
+	Type   string
 }
 
 func (s *Sprite) Kill() {

@@ -56,9 +56,10 @@ func (a *Vec2) Length() float64 {
 	return math.Sqrt(a.X*a.X + a.Y*a.Y)
 }
 
-func (a *Vec2) Add(o *Vec2) {
+func (a *Vec2) Add(o *Vec2) *Vec2 {
 	a.X += o.X
 	a.Y += o.Y
+	return a
 }
 
 func (a *Vec2) Sub(b *Vec2) *Vec2 {

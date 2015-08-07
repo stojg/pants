@@ -11,6 +11,10 @@ var interactive = true;
 var container = new PIXI.Container(0x66FF99, interactive);
 stage.addChild(container);
 
+var debugContainer = new PIXI.Container();
+stage.addChild(debugContainer);
+
+
 var graphics = {
 	stage: stage,
 	graphGraphics: container,
@@ -18,6 +22,7 @@ var graphics = {
 	renderer: renderer
 };
 
+var debugs = [];
 
 container.x = 0;
 container.y = 0;
@@ -66,9 +71,12 @@ var linearInterpolation = function (from, to, coef) {
 	return position;
 };
 
+// @todo(stig): This should probably be measured
 var interpolationDelay = 100;
 
 function update() {
+	debugContainer.removeChildren();
+
 	for (var key in sprites) {
 		if (!sprites.hasOwnProperty(key)) {
 			continue;
@@ -109,10 +117,6 @@ function update() {
 			sprite.height = 20;
 			sprite.width = 20;
 		}
-
-
-
-
 		// we passed the time for the next timestamp
 		if (coefficient > 1) {
 			sprite.snapshots.shift();
@@ -137,24 +141,28 @@ function handleMessage(msg) {
 			continue;
 		}
 
+		if (data[key].type === 'graphics') {
+			createGraphic(data[key]);
+			continue;
+		}
+
 		// create new sprite
 		if (typeof sprites[data[key].id] === "undefined") {
 			var sprite;
 			if(data[key].type === "sprite") {
 				sprite = createSprite(data[key]);
-			} else if (data[key].type === 'graphics') {
-				sprite = createGraphic(data[key]);
+				container.addChild(sprite);
+				sprites[sprite.id] = sprite;
+				sprites[sprite.id].snapshots = [];
 			} else {
 				console.log("unknown type " + data[key].type);
 			}
-			console.log("created " + sprite.id);
-			container.addChild(sprite);
-			sprites[sprite.id] = sprite;
-			sprites[sprite.id].snapshots = [];
+
 		}
 
 		if(data[key].dead) {
 			container.removeChild(sprites[data[key].id]);
+			// @todo should be a dead animation?
 			delete(sprites[data[key].id]);
 			continue;
 		}
@@ -171,9 +179,13 @@ function handleMessage(msg) {
 
 	function createGraphic(entity) {
 		var graphic = new PIXI.Graphics();
-		graphic.id = entity.id;
 		graphic.type = "graphics";
-
+		graphic.clear();
+		graphic.lineStyle(1, 0xffffff, 1);
+		graphic.beginFill(0xffffff, 1);
+		graphic.moveTo(entity.x, entity.y);
+		graphic.lineTo(Number(entity.data.toX), Number(entity.data.toY));
+		debugContainer.addChild(graphic)
 		return graphic;
 	}
 

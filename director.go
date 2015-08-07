@@ -1,7 +1,6 @@
 package main
 
-import (
-)
+import ()
 
 type Director struct {
 	lastAction float64
@@ -13,7 +12,7 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		return
 	}
 
-	if len(list.sprites) >= 1 {
+	if len(list.sprites) >= 20 {
 		return
 	}
 	director.lastAction = gameTime
@@ -22,5 +21,4 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		w.rand.Float64()*600,
 		"assets/basics/arrow.png",
 	)
-//	log.Printf("%d", len(w.entities.sprites))
 }

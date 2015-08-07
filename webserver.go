@@ -14,8 +14,8 @@ type webserver struct {
 func (server *webserver) Start() {
 
 	server.upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+		ReadBufferSize:  1024 * 10,
+		WriteBufferSize: 1024 * 10,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
 
