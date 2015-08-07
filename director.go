@@ -1,8 +1,6 @@
 package main
 
 import (
-	//	"log"
-	"log"
 )
 
 type Director struct {
