@@ -24,5 +24,5 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		w.rand.Float64()*600,
 		"assets/basics/arrow.png",
 	)
-	log.Printf("%d", len(w.entities.sprites))
+//	log.Printf("%d", len(w.entities.sprites))
 }
