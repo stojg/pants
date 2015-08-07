@@ -76,7 +76,7 @@ func (a *Vec2) Clone() *Vec2 {
 
 func (a *Vec2) Copy(b *Vec2) {
 	a.X = b.X
-	a.Y = a.Y
+	a.Y = b.Y
 }
 
 func (a *Vec2) Normalize() *Vec2 {
