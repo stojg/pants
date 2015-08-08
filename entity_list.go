@@ -25,11 +25,11 @@ type EntityList struct {
 	forceRegistry *PhysicsForceRegistry
 }
 
-var gravity *ParticleGravity
+var gravity *StaticForce
 
 func init() {
-	gravity = &ParticleGravity{
-		gravity: &Vec2{0,10},
+	gravity = &StaticForce{
+		force: &Vec2{0,10},
 	}
 }
 

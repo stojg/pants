@@ -8,15 +8,16 @@ type ForceGenerator interface {
 	UpdateForce(*Physics, float64)
 }
 
-type ParticleGravity struct {
-	gravity *Vec2
+
+type StaticForce struct {
+	force *Vec2
 }
 
-func (pg *ParticleGravity) UpdateForce(p *Physics, duration float64) {
+func (pg *StaticForce) UpdateForce(p *Physics, duration float64) {
 	if p.invMass == 0 {
 		return
 	}
-	p.AddForce(pg.gravity.Multiply(1/p.invMass))
+	p.AddForce(pg.force.Multiply(1/p.invMass))
 }
 
 type ParticleForceRegistration struct {
