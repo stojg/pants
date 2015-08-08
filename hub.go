@@ -8,14 +8,10 @@ import (
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.
 type hub struct {
-	// Registered connections.
-	connections map[*connection]bool
-	// Inbound messages from the connections.
-	broadcast chan []byte
-	// Register requests from the connections.
-	register chan *connection
-	// Unregister requests from connections.
-	unregister chan *connection
+	connections map[*connection]bool // Registered connections.
+	broadcast   chan []byte          // Inbound messages from the connections.
+	register    chan *connection     // Register requests from the connections.
+	unregister  chan *connection     // Unregister requests from connections.
 }
 
 var h = hub{

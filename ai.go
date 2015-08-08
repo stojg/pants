@@ -22,8 +22,6 @@ type AIDrunkard struct {
 }
 
 func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
-	// gravity
-	// w.entities.physics[s.Id].forces = &Vec2{0, 10}
 	d.handleInputs(s)
 	d.handleState(s, w, t)
 }
@@ -33,8 +31,8 @@ func (d *AIDrunkard) handleInputs(s *Sprite) {
 		switch input.Action {
 		case "mouseOver":
 			d.state.SetState(STATE_FLEE)
-		case "mouseOut":
-			d.state.SetState(STATE_IDLE)
+			//		case "mouseOut":
+			//			d.state.SetState(STATE_IDLE)
 		case "clickUp":
 			d.state.SetState(STATE_IDLE)
 		}
@@ -59,11 +57,14 @@ func (d *AIDrunkard) handleState(s *Sprite, w *World, t float64) {
 }
 
 func (d *AIDrunkard) flee(w *World, s *Sprite, duration float64) *SteeringOutput {
+	if d.state.Duration() > 1*time.Second {
+		d.steering = nil
+		d.state.SetState(STATE_IDLE)
+		return nil
+	}
+
 	if _, ok := d.steering.(*Flee); !ok {
-		d.steering = &Flee{
-			source: w.Physic(s.Id),
-			target: NewPhysicsPosition(w.RandF64(800), w.RandF64(600)),
-		}
+		d.steering = NewFlee(w.Physic(s.Id), NewPhysicsPosition(w.RandF64(800), w.RandF64(600)))
 	}
 	return d.steering.Get(duration)
 }

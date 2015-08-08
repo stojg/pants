@@ -7,7 +7,7 @@ import (
 
 func TestSeek(t *testing.T) {
 	arrive := &Arrive{}
-	arrive.source = &Physics{
+	arrive.entity = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
@@ -31,7 +31,7 @@ func TestSeek(t *testing.T) {
 
 func TestSeekStillToClose(t *testing.T) {
 	arrive := &Arrive{}
-	arrive.source = &Physics{
+	arrive.entity = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
@@ -56,7 +56,7 @@ func TestSeekStillToClose(t *testing.T) {
 
 func TestSeekWillMove(t *testing.T) {
 	arrive := &Arrive{}
-	arrive.source = &Physics{
+	arrive.entity = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
