@@ -6,21 +6,31 @@ import (
 
 func NewEntityList() *EntityList {
 	return &EntityList{
-		sprites: make(map[uint64]*Sprite),
-		ais:     make(map[uint64]AI),
-		physics: make(map[uint64]*Physics),
-		updated: make(map[uint64]bool),
+		sprites:       make(map[uint64]*Sprite),
+		ais:           make(map[uint64]AI),
+		physics:       make(map[uint64]*Physics),
+		updated:       make(map[uint64]bool),
+		forceRegistry: &PhysicsForceRegistry{},
 	}
 }
 
 // SpriteList is a simple struct that contains and interacts with Sprites /
 // Entities.
 type EntityList struct {
-	lastEntityID uint64
-	sprites      map[uint64]*Sprite
-	ais          map[uint64]AI
-	physics      map[uint64]*Physics
-	updated      map[uint64]bool
+	lastEntityID  uint64
+	sprites       map[uint64]*Sprite
+	ais           map[uint64]AI
+	physics       map[uint64]*Physics
+	updated       map[uint64]bool
+	forceRegistry *PhysicsForceRegistry
+}
+
+var gravity *ParticleGravity
+
+func init() {
+	gravity = &ParticleGravity{
+		gravity: &Vec2{0,10},
+	}
 }
 
 func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
@@ -34,9 +44,9 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	s.sprites[sprite.Id] = sprite
 	s.ais[sprite.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
 	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14*2)
-	s.physics[sprite.Id].setMass(10)
+	s.physics[sprite.Id].setMass(1)
 	s.physics[sprite.Id].setDamping(0.99)
-	s.physics[sprite.Id].setAcceleration(&Vec2{0, 10})
+	s.forceRegistry.Add(s.physics[sprite.Id], gravity)
 	s.updated[sprite.Id] = true
 	return sprite.Id
 }
@@ -67,6 +77,9 @@ func (s *EntityList) all() []*EntityUpdate {
 }
 
 func (s *EntityList) Update(w *World, duration, gameTime float64) {
+
+	s.forceRegistry.Update(duration)
+
 	for _, sprite := range s.sprites {
 		s.ais[sprite.Id].Update(sprite, w, duration)
 	}
