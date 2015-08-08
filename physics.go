@@ -81,11 +81,11 @@ func (c *Physics) Update(sprite *Sprite, w *World, duration float64) {
 	// mark as updated
 	if !c.Position.Equals(c.prevPosition) {
 		c.prevPosition.Copy(c.Position)
-		list.updated[sprite.Id] = true
+		entityManager.updated[sprite.Id] = true
 	}
 	if math.Abs(c.prevOrientation-c.Orientation) < EPSILON {
 		c.prevOrientation = c.Orientation
-		list.updated[sprite.Id] = true
+		entityManager.updated[sprite.Id] = true
 	}
 }
 

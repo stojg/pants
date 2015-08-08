@@ -6,17 +6,18 @@ import (
 	"runtime"
 )
 
-var list *EntityList
+var entityManager *EntityManager
 
 func main() {
 	nCPU := runtime.NumCPU()
 	runtime.GOMAXPROCS(nCPU)
 	log.Printf("running on %d CPUs", nCPU)
 
-	world := NewWorld(list)
+	world := NewWorld(entityManager)
 	webserver := webserver{port: "8081"}
 
-	world.Run()
-	go h.run(list)
+	go world.worldTick()
+	go world.networkTick()
+	go h.run(entityManager)
 	webserver.Start()
 }

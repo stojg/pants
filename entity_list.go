@@ -4,8 +4,8 @@ import (
 	. "github.com/stojg/pants/vector"
 )
 
-func NewEntityList() *EntityList {
-	return &EntityList{
+func NewEntityManager() *EntityManager {
+	return &EntityManager{
 		sprites:       make(map[uint64]*Sprite),
 		ais:           make(map[uint64]AI),
 		physics:       make(map[uint64]*Physics),
@@ -16,7 +16,7 @@ func NewEntityList() *EntityList {
 
 // SpriteList is a simple struct that contains and interacts with Sprites /
 // Entities.
-type EntityList struct {
+type EntityManager struct {
 	lastEntityID  uint64
 	sprites       map[uint64]*Sprite
 	ais           map[uint64]AI
@@ -33,7 +33,7 @@ func init() {
 	}
 }
 
-func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
+func (s *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	sprite := &Sprite{}
 	sprite.Dead = false
 	sprite.Type = "sprite"
@@ -50,13 +50,7 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	return sprite.Id
 }
 
-func (s *EntityList) Add(e *Sprite) {
-	s.lastEntityID++
-	e.Id = s.lastEntityID
-	s.sprites[s.lastEntityID] = e
-}
-
-func (s *EntityList) all() []*EntityUpdate {
+func (s *EntityManager) all() []*EntityUpdate {
 	entities := make([]*EntityUpdate, 0, len(s.sprites))
 	for id, spr := range s.sprites {
 
@@ -75,7 +69,7 @@ func (s *EntityList) all() []*EntityUpdate {
 	return entities
 }
 
-func (s *EntityList) Update(w *World, duration, gameTime float64) {
+func (s *EntityManager) Update(w *World, duration, gameTime float64) {
 
 	s.forceRegistry.Update(duration)
 

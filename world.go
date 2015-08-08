@@ -9,14 +9,14 @@ import (
 
 const NetFPS = 50 * time.Millisecond
 
-func NewWorld(list *EntityList) *World {
+func NewWorld(list *EntityManager) *World {
 	current := time.Now()
 	return &World{
 		netTicked:  current,
 		gameTicked: current,
 		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		//		rand:       rand.New(rand.NewSource(1)),
-		entities: list,
+		entityManager: list,
 		director: &Director{},
 	}
 }
@@ -26,7 +26,7 @@ type World struct {
 	netTick    uint64
 	gameTicked time.Time
 	gameTick   uint64
-	entities   *EntityList
+	entityManager *EntityManager
 	rand       *rand.Rand
 	director   *Director
 	debug      []*Line
@@ -41,17 +41,12 @@ type EntityUpdate struct {
 	Data        map[string]string `bson:",minsize,omitempty"`
 }
 
-func (w *World) Run() {
-	go w.worldTick()
-	go w.networkTick()
-}
-
 func (w *World) RandF64(x int) float64 {
 	return w.rand.Float64() * 800
 }
 
 func (w *World) Physic(id uint64) *Physics {
-	return w.entities.physics[id]
+	return w.entityManager.physics[id]
 }
 
 func (w *World) Line(start, end *Vec2) {
@@ -72,8 +67,8 @@ func (w *World) networkTick() {
 		w.netTick += 1
 		// Send a snapshot to all connections
 
-		h.SendUpdates(list.updated, w, currentTime)
-		list.updated = make(map[uint64]bool)
+		h.SendUpdates(entityManager.updated, w, currentTime)
+		entityManager.updated = make(map[uint64]bool)
 	}
 }
 
@@ -94,7 +89,7 @@ func (w *World) worldTick() {
 		accumulator += frameTime
 		for accumulator >= dt {
 			// Individual entities
-			w.entities.Update(w, dt, gameTime)
+			w.entityManager.Update(w, dt, gameTime)
 			accumulator -= (dt)
 			gameTime += dt
 		}

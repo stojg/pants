@@ -5,7 +5,7 @@ import (
 )
 
 func TestAddSprite(t *testing.T) {
-	list := NewEntityList()
+	list := NewEntityManager()
 	spriteID := list.NewEntity(0, 0, "sprite.png")
 	w := NewWorld(list)
 	list.Update(w, 0.016, 0.016)
@@ -15,7 +15,7 @@ func TestAddSprite(t *testing.T) {
 }
 
 func BenchmarkSpriteUpdate(b *testing.B) {
-	list := NewEntityList()
+	list := NewEntityManager()
 
 	for i := 0; i < 100; i++ {
 		list.NewEntity(0, 0, "sprite.png")

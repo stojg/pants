@@ -12,11 +12,11 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		return
 	}
 
-	if len(list.sprites) >= 10 {
+	if len(entityManager.sprites) >= 10 {
 		return
 	}
 	director.lastAction = gameTime
-	w.entities.NewEntity(
+	w.entityManager.NewEntity(
 		w.rand.Float64()*800,
 		w.rand.Float64()*600,
 		"assets/basics/arrow.png",

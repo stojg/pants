@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	list = NewEntityList()
+	entityManager = NewEntityManager()
 }
 
 type Line struct {
@@ -23,7 +23,7 @@ type Sprite struct {
 
 func (s *Sprite) Kill() {
 	s.Dead = true
-	list.updated[s.Id] = true
+	entityManager.updated[s.Id] = true
 }
 
 func (s *Sprite) AddInput(i *InputRequest) {

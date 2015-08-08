@@ -14,7 +14,7 @@ type hub struct {
 	broadcast   chan []byte          // Inbound messages from the connections.
 	register    chan *connection     // Register requests from the connections.
 	unregister  chan *connection     // Unregister requests from connections.
-	list        *EntityList
+	list        *EntityManager
 }
 
 var h = hub{
@@ -24,7 +24,7 @@ var h = hub{
 	connections: make(map[*connection]bool),
 }
 
-func (h *hub) run(list *EntityList) {
+func (h *hub) run(list *EntityManager) {
 	h.list = list
 	for {
 		select {
@@ -54,7 +54,7 @@ func (h *hub) run(list *EntityList) {
 func (h *hub) SendAll(c *connection) {
 	t := &Message{
 		Topic:     "all",
-		Data:      list.all(),
+		Data:      entityManager.all(),
 		Timestamp: float64(time.Now().UnixNano()) / 1000000,
 	}
 	msg, _ := bson.Marshal(t)
@@ -69,10 +69,10 @@ func (h *hub) SendUpdates(list map[uint64]bool, w *World, currentTime time.Time)
 			X:           w.Physic(id).Position.X,
 			Y:           w.Physic(id).Position.Y,
 			Orientation: w.Physic(id).Orientation,
-			Type:        w.entities.sprites[id].Type,
-			Dead:        w.entities.sprites[id].Dead,
+			Type:        w.entityManager.sprites[id].Type,
+			Dead:        w.entityManager.sprites[id].Dead,
 			Data: map[string]string{
-				"Image": w.entities.sprites[id].Image,
+				"Image": w.entityManager.sprites[id].Image,
 			},
 		})
 	}
