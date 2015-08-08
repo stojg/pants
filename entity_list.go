@@ -2,8 +2,6 @@ package main
 
 import (
 	. "github.com/stojg/pants/vector"
-	"labix.org/v2/mgo/bson"
-	"time"
 )
 
 func NewEntityList() *EntityList {
@@ -47,16 +45,6 @@ func (s *EntityList) Add(e *Sprite) {
 	s.lastEntityID++
 	e.Id = s.lastEntityID
 	s.sprites[s.lastEntityID] = e
-}
-
-func (s *EntityList) SendAll(c *connection) {
-	t := &Message{
-		Topic:     "all",
-		Data:      s.all(),
-		Timestamp: float64(time.Now().UnixNano()) / 1000000,
-	}
-	msg, _ := bson.Marshal(t)
-	c.send <- msg
 }
 
 func (s *EntityList) all() []*EntityUpdate {

@@ -17,6 +17,6 @@ func main() {
 	webserver := webserver{port: "8081"}
 
 	world.Run()
-	go h.run()
+	go h.run(list)
 	webserver.Start()
 }

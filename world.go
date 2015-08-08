@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	. "github.com/stojg/pants/vector"
 	"log"
 	"math/rand"
@@ -72,44 +71,9 @@ func (w *World) networkTick() {
 		w.netTicked = currentTime
 		w.netTick += 1
 		// Send a snapshot to all connections
-		changedSprites := make([]*EntityUpdate, 0)
-		for id := range list.updated {
-			changedSprites = append(changedSprites, &EntityUpdate{
-				Id:          id,
-				X:           w.entities.physics[id].Position.X,
-				Y:           w.entities.physics[id].Position.Y,
-				Orientation: w.entities.physics[id].Orientation,
-				Type:        w.entities.sprites[id].Type,
-				Dead:        w.entities.sprites[id].Dead,
-				Data: map[string]string{
-					"Image": list.sprites[id].Image,
-				},
-			})
-			delete(list.updated, id)
-		}
 
-		for _, line := range w.debug {
-			// @todo(stig): make sure deleted entities are .. dead
-			changedSprites = append(changedSprites, &EntityUpdate{
-				X:    line.Position.X,
-				Y:    line.Position.Y,
-				Type: "graphics",
-				Data: map[string]string{
-					"toX": fmt.Sprintf("%9.f", line.End.X),
-					"toY": fmt.Sprintf("%9.f", line.End.Y),
-				},
-			})
-		}
-		w.debug = nil
-
-		if len(changedSprites) > 0 {
-			h.Send(&Message{
-				Topic:     "update",
-				Data:      changedSprites,
-				Tick:      w.gameTick,
-				Timestamp: float64(currentTime.UnixNano()) / 1000000,
-			})
-		}
+		h.SendUpdates(list.updated, w, currentTime)
+		list.updated = make(map[uint64]bool)
 	}
 }
 
