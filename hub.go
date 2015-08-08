@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"labix.org/v2/mgo/bson"
 	"log"
 	"time"
-	"fmt"
 )
 
 // hub maintains the set of active connections and broadcasts messages to the

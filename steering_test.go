@@ -1,81 +1,33 @@
 package main
 
 import (
-	. "github.com/stojg/pants/vector"
 	"testing"
 )
 
-func TestSeek(t *testing.T) {
-	arrive := &Arrive{}
-	arrive.entity = &Physics{
-		Position: &Vec2{
-			X: 0,
-			Y: 0,
-		},
-	}
-	arrive.target = &Physics{
-		Position: &Vec2{
-			X: 0,
-			Y: 0,
-		},
-	}
-	arrive.targetRadius = 10
-	arrive.timeToTarget = 0.1
-	arrive.slowRadius = 20
-
-	s := arrive.Get(0.016)
-	if s.linear.Length() != 0 {
-		t.Errorf("Arrive.Get should return zero length")
+func TestArrive(t *testing.T) {
+	arrive := NewArrive(NewPhysics(0, 0, 0, 1), NewPhysics(1, 0, 0, 1), 10, 20)
+	actual := arrive.Get(0.016).linear.Length()
+	expected := 0.0
+	if actual != expected {
+		t.Errorf("Arrive.Get expected %f, got %f", expected, actual)
 	}
 }
 
-func TestSeekStillToClose(t *testing.T) {
-	arrive := &Arrive{}
-	arrive.entity = &Physics{
-		Position: &Vec2{
-			X: 0,
-			Y: 0,
-		},
-		Velocity: &Vec2{},
-	}
-	arrive.target = &Physics{
-		Position: &Vec2{
-			X: 11,
-			Y: 0,
-		},
-	}
-	arrive.targetRadius = 10
-	arrive.timeToTarget = 1
-	arrive.slowRadius = 20
-
-	s := arrive.Get(0.016)
-	if s.linear.Length() != 0 {
-		t.Errorf("Arrive.Get should return zero length")
+func TestArriveStillToClose(t *testing.T) {
+	arrive := NewArrive(NewPhysics(0, 0, 0, 1), NewPhysics(10, 0, 0, 1), 10, 20)
+	actual := arrive.Get(0.016).linear.Length()
+	expected := 0.0
+	if actual != expected {
+		t.Errorf("Arrive.Get expected %f, got %f", expected, actual)
 	}
 }
 
-func TestSeekWillMove(t *testing.T) {
-	arrive := &Arrive{}
-	arrive.entity = &Physics{
-		Position: &Vec2{
-			X: 0,
-			Y: 0,
-		},
-		Velocity:    &Vec2{},
-		maxVelocity: 10,
-	}
-	arrive.target = &Physics{
-		Position: &Vec2{
-			X: 12,
-			Y: 0,
-		},
-	}
-	arrive.targetRadius = 10
-	arrive.timeToTarget = 1
-	arrive.slowRadius = 20
-
-	s := arrive.Get(0.016)
-	if s.linear.Length() == 0 {
-		t.Errorf("Arrive.Get should not zero length %f", s.linear.Length())
+func TestArriveWillMove(t *testing.T) {
+	entity := NewPhysics(0, 0, 0, 1)
+	arrive := NewArrive(entity, NewPhysics(12, 0, 0, 1), 10, 20)
+	actual := arrive.Get(0.016).linear.Length()
+	expected := entity.maxAcceleration
+	if actual != expected {
+		t.Errorf("Arrive.Get expected %f, got %f", expected, actual)
 	}
 }

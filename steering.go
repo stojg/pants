@@ -120,7 +120,7 @@ func (s *Arrive) Get(dt float64) *SteeringOutput {
 	distance := direction.Length()
 
 	// We have arrived, no output
-	if distance < s.targetRadius {
+	if distance <= s.targetRadius {
 		return steering
 	}
 

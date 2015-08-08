@@ -64,7 +64,7 @@ func (d *AIDrunkard) flee(w *World, s *Sprite, duration float64) *SteeringOutput
 	}
 
 	if _, ok := d.steering.(*Flee); !ok {
-		d.steering = NewFlee(w.Physic(s.Id), NewPhysicsPosition(w.RandF64(800), w.RandF64(600)))
+		d.steering = NewFlee(w.Physic(s.Id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0))
 	}
 	return d.steering.Get(duration)
 }
@@ -83,7 +83,7 @@ func (d *AIDrunkard) idle(w *World, s *Sprite, duration float64) *SteeringOutput
 
 func (d *AIDrunkard) hunt(w *World, s *Sprite, duration float64) *SteeringOutput {
 	if _, ok := d.steering.(*Arrive); !ok {
-		d.steering = NewArrive(w.Physic(s.Id), NewPhysicsPosition(w.RandF64(800), w.RandF64(600)), 1, 500)
+		d.steering = NewArrive(w.Physic(s.Id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0), 1, 500)
 	}
 	length := d.steering.Target().Position.Direction(w.Physic(s.Id).Position).Length()
 	if length < 2 {

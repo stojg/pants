@@ -5,28 +5,6 @@ import (
 	"math"
 )
 
-func NewPhysicsComponent(x, y, orientation float64) *Physics {
-	return &Physics{
-		Position:        &Vec2{X: x, Y: y},
-		prevPosition:    &Vec2{X: x, Y: y},
-		Velocity:        &Vec2{0, 0},
-		maxVelocity:     300,
-		maxAcceleration: 100,
-
-		acceleration: &Vec2{0, 0},
-
-		forces: &Vec2{0, 0},
-
-		Orientation:     orientation,
-		prevOrientation: orientation,
-		AngularVelocity: 0,
-		rotations:       0,
-
-		invMass: 0,
-		damping: 0.999,
-	}
-}
-
 type Physics struct {
 	Position        *Vec2
 	prevPosition    *Vec2
@@ -49,17 +27,43 @@ type Physics struct {
 	damping float64
 }
 
-func NewPhysicsPosition(x, y float64) *Physics {
+func NewPhysics(x, y, orientation, mass float64) *Physics {
+
+	var invMass float64
+	if mass > 0 {
+		invMass = 1 / mass
+	}
+
 	return &Physics{
-		Position: &Vec2{X: x, Y: y},
+		Position:        &Vec2{X: x, Y: y},
+		prevPosition:    &Vec2{X: x, Y: y},
+		Velocity:        &Vec2{0, 0},
+		maxVelocity:     300,
+		maxAcceleration: 100,
+
+		acceleration: &Vec2{0, 0},
+
+		forces: &Vec2{0, 0},
+
+		Orientation:     orientation,
+		prevOrientation: orientation,
+		AngularVelocity: 0,
+		rotations:       0,
+
+		invMass: invMass,
+		damping: 0.999,
 	}
 }
 
 func (c *Physics) Clone() *Physics {
 	t := c.Position.Clone()
-	return &Physics{
-		Position: &Vec2{X: t.X, Y: t.Y},
-	}
+	pc := NewPhysics(t.X, t.Y, 0, 1/c.invMass)
+	pc.Velocity = c.Velocity.Clone()
+	return pc
+}
+
+func (c *Physics) getPosition(a *Vec2) {
+	a.Copy(c.Position)
 }
 
 func (c *Physics) Update(sprite *Sprite, w *World, duration float64) {

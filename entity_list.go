@@ -29,7 +29,7 @@ var gravity *StaticForce
 
 func init() {
 	gravity = &StaticForce{
-		force: &Vec2{0,10},
+		force: &Vec2{0, 10},
 	}
 }
 
@@ -43,8 +43,7 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	sprite.Id = s.lastEntityID
 	s.sprites[sprite.Id] = sprite
 	s.ais[sprite.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
-	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14*2)
-	s.physics[sprite.Id].setMass(1)
+	s.physics[sprite.Id] = NewPhysics(x, y, 3.14*2, 1)
 	s.physics[sprite.Id].setDamping(0.99)
 	s.forceRegistry.Add(s.physics[sprite.Id], gravity)
 	s.updated[sprite.Id] = true
