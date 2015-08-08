@@ -27,7 +27,6 @@ type Vec2 struct {
 	X, Y float64
 }
 
-
 func (a *Vec2) Direction(b *Vec2) *Vec2 {
 	return a.Clone().Sub(b)
 }
