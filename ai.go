@@ -85,7 +85,9 @@ func (d *AIDrunkard) hunt(w *World, s *Sprite, duration float64) *SteeringOutput
 	if _, ok := d.steering.(*Arrive); !ok {
 		d.steering = NewArrive(w.Physic(s.Id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0), 1, 500)
 	}
-	length := d.steering.Target().Position.Direction(w.Physic(s.Id).Position).Length()
+
+	direction := d.steering.Target().Position.Clone().Sub(w.Physic(s.Id).Position)
+	length := direction.Length()
 	if length < 2 {
 		d.steering = nil
 		d.state.SetState(STATE_IDLE)
