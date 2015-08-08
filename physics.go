@@ -5,8 +5,8 @@ import (
 	"math"
 )
 
-func NewPhysicsComponent(x, y, orientation float64) *PhysicsComponent {
-	return &PhysicsComponent{
+func NewPhysicsComponent(x, y, orientation float64) *Physics {
+	return &Physics{
 		Position:        &Vec2{X: x, Y: y},
 		prevPosition:    &Vec2{X: x, Y: y},
 		Velocity:        &Vec2{0, 0},
@@ -27,7 +27,7 @@ func NewPhysicsComponent(x, y, orientation float64) *PhysicsComponent {
 	}
 }
 
-type PhysicsComponent struct {
+type Physics struct {
 	Position        *Vec2
 	prevPosition    *Vec2
 	Velocity        *Vec2
@@ -49,15 +49,28 @@ type PhysicsComponent struct {
 	damping float64
 }
 
-func (c *PhysicsComponent) Update(sprite *Sprite, w *World, duration float64) {
-
-	if c.Velocity.Length() > 1 {
-		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
+func NewPhysicsPosition(x, y float64) *Physics {
+	return &Physics{
+		Position: &Vec2{X: x, Y: y},
 	}
+}
 
-	if c.forces.Length() > 1 {
-		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10)))
+func (c *Physics) Clone() *Physics {
+	t := c.Position.Clone()
+	return &Physics{
+		Position: &Vec2{X: t.X, Y: t.Y},
 	}
+}
+
+func (c *Physics) Update(sprite *Sprite, w *World, duration float64) {
+
+	//	if c.Velocity.Length() > 1 {
+	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
+	//	}
+
+	//	if c.forces.Length() > 1 {
+	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10).Multiply(-1)))
+	//	}
 
 	c.integrate(sprite, duration)
 
@@ -72,7 +85,7 @@ func (c *PhysicsComponent) Update(sprite *Sprite, w *World, duration float64) {
 	}
 }
 
-func (c *PhysicsComponent) integrate(sprite *Sprite, duration float64) {
+func (c *Physics) integrate(sprite *Sprite, duration float64) {
 	if c.invMass <= 0 {
 		return
 	}
@@ -101,26 +114,26 @@ func (c *PhysicsComponent) integrate(sprite *Sprite, duration float64) {
 	c.clearForces()
 }
 
-func (c *PhysicsComponent) Mass() float64 {
+func (c *Physics) Mass() float64 {
 	return 1 / c.invMass
 }
 
-func (c *PhysicsComponent) setMass(m float64) {
+func (c *Physics) setMass(m float64) {
 	c.invMass = 1 / m
 }
 
-func (c *PhysicsComponent) setDamping(d float64) {
+func (c *Physics) setDamping(d float64) {
 	c.damping = d
 }
 
-func (c *PhysicsComponent) setAcceleration(a *Vec2) {
+func (c *Physics) setAcceleration(a *Vec2) {
 	c.acceleration = a
 }
 
-func (c *PhysicsComponent) AddForce(v *Vec2) {
+func (c *Physics) AddForce(v *Vec2) {
 	c.forces.Add(v)
 }
 
-func (c *PhysicsComponent) clearForces() {
+func (c *Physics) clearForces() {
 	c.forces.Clear()
 }

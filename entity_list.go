@@ -10,7 +10,7 @@ func NewEntityList() *EntityList {
 	return &EntityList{
 		sprites: make(map[uint64]*Sprite),
 		ais:     make(map[uint64]AI),
-		physics: make(map[uint64]*PhysicsComponent),
+		physics: make(map[uint64]*Physics),
 		updated: make(map[uint64]bool),
 	}
 }
@@ -21,7 +21,7 @@ type EntityList struct {
 	lastEntityID uint64
 	sprites      map[uint64]*Sprite
 	ais          map[uint64]AI
-	physics      map[uint64]*PhysicsComponent
+	physics      map[uint64]*Physics
 	updated      map[uint64]bool
 }
 
@@ -34,7 +34,7 @@ func (s *EntityList) NewEntity(x, y float64, image string) uint64 {
 	s.lastEntityID++
 	sprite.Id = s.lastEntityID
 	s.sprites[sprite.Id] = sprite
-	s.ais[sprite.Id] = &AIDrunkard{state: "idle"}
+	s.ais[sprite.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
 	s.physics[sprite.Id] = NewPhysicsComponent(x, y, 3.14*2)
 	s.physics[sprite.Id].setMass(10)
 	s.physics[sprite.Id].setDamping(0.99)

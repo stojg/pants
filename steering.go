@@ -18,14 +18,24 @@ type SteeringOutput struct {
 
 type Steering interface {
 	Get(dt float64) *SteeringOutput
+	Target() *Physics
+	Entity() *Physics
 }
 
 type Seek struct {
-	source *PhysicsComponent
-	target *PhysicsComponent
+	source *Physics
+	target *Physics
 }
 
-func (s Seek) Get(dt float64) *SteeringOutput {
+func (s *Seek) Entity() *Physics {
+	return s.source
+}
+
+func (s *Seek) Target() *Physics {
+	return s.target
+}
+
+func (s *Seek) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
 	steering.linear = s.target.Position.Clone().Sub(s.source.Position)
@@ -34,9 +44,41 @@ func (s Seek) Get(dt float64) *SteeringOutput {
 	return steering
 }
 
+type Flee struct {
+	source *Physics
+	target *Physics
+}
+
+func (s *Flee) Entity() *Physics {
+	return s.source
+}
+
+func (s *Flee) Target() *Physics {
+	return s.target
+}
+
+func (s *Flee) Get(dt float64) *SteeringOutput {
+	steering := NewSteeringOutput()
+	// Get the direction to the target
+	steering.linear = s.source.Position.Clone().Sub(s.target.Position)
+	// Go full speed ahead
+	steering.linear.Normalize().Scale(s.source.maxAcceleration)
+	return steering
+}
+
+func NewArrive(source, target *Physics, targetRadius, slowRadius float64) *Arrive {
+	return &Arrive{
+		source:       source,
+		target:       target,
+		targetRadius: targetRadius,
+		slowRadius:   slowRadius,
+		timeToTarget: 0.1,
+	}
+}
+
 type Arrive struct {
-	source *PhysicsComponent
-	target *PhysicsComponent
+	source *Physics
+	target *Physics
 	// Holds the radius that says we are at the target
 	targetRadius float64
 	// Start slowing down at this radius
@@ -45,7 +87,15 @@ type Arrive struct {
 	timeToTarget float64
 }
 
-func (s Arrive) Get(dt float64) *SteeringOutput {
+func (s *Arrive) Entity() *Physics {
+	return s.source
+}
+
+func (s *Arrive) Target() *Physics {
+	return s.target
+}
+
+func (s *Arrive) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 
 	direction := s.target.Position.Clone().Sub(s.source.Position)
@@ -68,8 +118,8 @@ func (s Arrive) Get(dt float64) *SteeringOutput {
 
 	// Acceleration tries to get to the target velocity
 	steering.linear = targetVelocity.Sub(s.source.Velocity)
-	// try to get there in 0.1 seconds
-	steering.linear.Scale(1 / 0.1)
+	// try to get there in timeToTarget seconds
+	steering.linear.Scale(1 / s.timeToTarget)
 
 	if steering.linear.Length() > s.source.maxAcceleration {
 		steering.linear = steering.linear.Normalize().Scale(s.source.maxAcceleration)

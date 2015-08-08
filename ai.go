@@ -1,8 +1,15 @@
 package main
 
 import (
-	. "github.com/stojg/pants/vector"
-	"math"
+	"time"
+)
+
+type State int
+
+const (
+	STATE_IDLE State = iota // 0
+	STATE_FLEE              // 1
+	STATE_HUNT              // 2
 )
 
 type AI interface {
@@ -10,63 +17,78 @@ type AI interface {
 }
 
 type AIDrunkard struct {
-	state    string
+	state    *StateMachine
 	steering Steering
 }
 
 func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
+	// gravity
+	// w.entities.physics[s.Id].forces = &Vec2{0, 10}
+	d.handleInputs(s)
+	d.handleState(s, w, t)
+}
 
-	w.entities.physics[s.Id].forces = &Vec2{0, 10}
-
+func (d *AIDrunkard) handleInputs(s *Sprite) {
 	for _, input := range s.inputs {
 		switch input.Action {
 		case "mouseOver":
-			d.Flee(w, s)
+			d.state.SetState(STATE_FLEE)
 		case "mouseOut":
-			d.Idle(w, s)
+			d.state.SetState(STATE_IDLE)
 		case "clickUp":
-			s.Kill()
+			d.state.SetState(STATE_IDLE)
 		}
 	}
-	if len(s.inputs) == 0 {
-		d.Stagger(w, s, t)
-	}
-	s.inputs = s.inputs[0:0]
+	s.inputs = nil
 }
 
-func (d *AIDrunkard) Flee(w *World, s *Sprite) {
-	if d.state == "flee" {
-		return
+func (d *AIDrunkard) handleState(s *Sprite, w *World, t float64) {
+	var o *SteeringOutput
+	switch d.state.State() {
+	case STATE_IDLE:
+		o = d.idle(w, s, t)
+	case STATE_FLEE:
+		o = d.flee(w, s, t)
+	case STATE_HUNT:
+		o = d.hunt(w, s, t)
 	}
-	o := w.rand.Float64() * math.Pi * 2
-	w.entities.physics[s.Id].Orientation = o
-	w.entities.physics[s.Id].forces = RadiansVec2(o).Multiply(10)
-	d.state = "flee"
+	if o != nil {
+		w.Physic(s.Id).AddForce(o.linear.Scale(w.Physic(s.Id).Mass()))
+		w.Physic(s.Id).rotations = o.angular
+	}
 }
 
-func (d *AIDrunkard) Idle(w *World, s *Sprite) {
-	if d.state == "idle" {
-		return
-	}
-	d.state = "idle"
-	w.entities.physics[s.Id].forces = (&Vec2{0, 0})
-}
-
-func (d *AIDrunkard) Stagger(w *World, s *Sprite, duration float64) {
-
-	if d.state != "stagger" {
-		d.state = "stagger"
-		d.steering = &Arrive{
-			source: w.entities.physics[s.Id],
-			target: &PhysicsComponent{
-				Position: &Vec2{X: w.rand.Float64() * 800, Y: w.rand.Float64() * 600},
-			},
-			targetRadius: 1,
-			slowRadius:   300,
+func (d *AIDrunkard) flee(w *World, s *Sprite, duration float64) *SteeringOutput {
+	if _, ok := d.steering.(*Flee); !ok {
+		d.steering = &Flee{
+			source: w.Physic(s.Id),
+			target: NewPhysicsPosition(w.RandF64(800), w.RandF64(600)),
 		}
 	}
-	output := d.steering.Get(duration)
-	w.entities.physics[s.Id].AddForce(output.linear.Scale(w.entities.physics[s.Id].Mass()))
-	w.entities.physics[s.Id].rotations = output.angular
+	return d.steering.Get(duration)
+}
 
+func (d *AIDrunkard) idle(w *World, s *Sprite, duration float64) *SteeringOutput {
+	if d.state.Duration() > 3*time.Second {
+		d.steering = nil
+		d.state.SetState(STATE_HUNT)
+		return nil
+	}
+	if _, ok := d.steering.(*Arrive); !ok {
+		d.steering = NewArrive(w.Physic(s.Id), w.Physic(s.Id).Clone(), 1, 500)
+	}
+	return d.steering.Get(duration)
+}
+
+func (d *AIDrunkard) hunt(w *World, s *Sprite, duration float64) *SteeringOutput {
+	if _, ok := d.steering.(*Arrive); !ok {
+		d.steering = NewArrive(w.Physic(s.Id), NewPhysicsPosition(w.RandF64(800), w.RandF64(600)), 1, 500)
+	}
+	length := d.steering.Target().Position.Direction(w.Physic(s.Id).Position).Length()
+	if length < 2 {
+		d.steering = nil
+		d.state.SetState(STATE_IDLE)
+		return nil
+	}
+	return d.steering.Get(duration)
 }

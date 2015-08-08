@@ -47,6 +47,14 @@ func (w *World) Run() {
 	go w.networkTick()
 }
 
+func (w *World) RandF64(x int) float64 {
+	return w.rand.Float64() * 800
+}
+
+func (w *World) Physic(id uint64) *Physics {
+	return w.entities.physics[id]
+}
+
 func (w *World) Line(start, end *Vec2) {
 	w.debug = append(w.debug, &Line{
 		Position: start,

@@ -7,13 +7,13 @@ import (
 
 func TestSeek(t *testing.T) {
 	arrive := &Arrive{}
-	arrive.source = &PhysicsComponent{
+	arrive.source = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
 		},
 	}
-	arrive.target = &PhysicsComponent{
+	arrive.target = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
@@ -31,14 +31,14 @@ func TestSeek(t *testing.T) {
 
 func TestSeekStillToClose(t *testing.T) {
 	arrive := &Arrive{}
-	arrive.source = &PhysicsComponent{
+	arrive.source = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
 		},
 		Velocity: &Vec2{},
 	}
-	arrive.target = &PhysicsComponent{
+	arrive.target = &Physics{
 		Position: &Vec2{
 			X: 11,
 			Y: 0,
@@ -56,7 +56,7 @@ func TestSeekStillToClose(t *testing.T) {
 
 func TestSeekWillMove(t *testing.T) {
 	arrive := &Arrive{}
-	arrive.source = &PhysicsComponent{
+	arrive.source = &Physics{
 		Position: &Vec2{
 			X: 0,
 			Y: 0,
@@ -64,7 +64,7 @@ func TestSeekWillMove(t *testing.T) {
 		Velocity:    &Vec2{},
 		maxVelocity: 10,
 	}
-	arrive.target = &PhysicsComponent{
+	arrive.target = &Physics{
 		Position: &Vec2{
 			X: 12,
 			Y: 0,
