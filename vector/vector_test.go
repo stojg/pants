@@ -209,6 +209,30 @@ func TestLength(t *testing.T) {
 	}
 }
 
+var squareLengthTests = []struct {
+	in  *Vec2
+	out float64
+}{
+	{&Vec2{}, 0},
+	{&Vec2{1,0}, 1},
+	{&Vec2{-1,0}, 1},
+	{&Vec2{0,1}, 1},
+	{&Vec2{0,-1}, 1},
+	{&Vec2{3,0}, 9},
+	{&Vec2{0,3}, 9},
+	{&Vec2{1,1}, (1 + 1)},
+	{&Vec2{-1,-1},(1 + 1)},
+}
+
+func TestSquareLength(t *testing.T) {
+	for _, td := range squareLengthTests {
+		actual := td.in.SquareLength()
+		if actual != td.out {
+			t.Errorf("%v.Length() => %f, want %f", td.in, actual, td.out)
+		}
+	}
+}
+
 var toOrientationTests = []struct {
 	in  *Vec2
 	out float64
