@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/stojg/pants/vector"
+	. "github.com/stojg/pants/physics"
 	"log"
 	"math/rand"
 	"time"

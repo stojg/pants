@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/stojg/pants/vector"
+	. "github.com/stojg/pants/physics"
 )
 
 // SteeringOutput is what every steering behaviour will return. It contains the
@@ -47,7 +48,7 @@ func (s *Seek) Get(dt float64) *SteeringOutput {
 	// Get the direction to the target
 	steering.linear = s.target.Position.Clone().Sub(s.entity.Position)
 	// Go full speed ahead
-	steering.linear.Normalize().Scale(s.entity.maxAcceleration)
+	steering.linear.Normalize().Scale(s.entity.MaxAcceleration())
 	return steering
 }
 
@@ -71,7 +72,7 @@ func (s *Flee) Get(dt float64) *SteeringOutput {
 	// Get the direction to the target
 	steering.linear = s.entity.Position.Clone().Sub(s.target.Position)
 	// Go full speed ahead
-	steering.linear.Normalize().Scale(s.entity.maxAcceleration)
+	steering.linear.Normalize().Scale(s.entity.MaxAcceleration())
 	return steering
 }
 
@@ -124,7 +125,7 @@ func (s *Arrive) Get(dt float64) *SteeringOutput {
 		return steering
 	}
 
-	targetSpeed := s.entity.maxVelocity
+	targetSpeed := s.entity.MaxVelocity()
 	// We are inside the slow radius, so don't go full speed
 	if distance < s.slowRadius {
 		targetSpeed *= distance / s.slowRadius
@@ -139,8 +140,8 @@ func (s *Arrive) Get(dt float64) *SteeringOutput {
 	// try to get there in timeToTarget seconds
 	steering.linear.Scale(1 / s.timeToTarget)
 
-	if steering.linear.Length() > s.entity.maxAcceleration {
-		steering.linear = steering.linear.Normalize().Scale(s.entity.maxAcceleration)
+	if steering.linear.Length() > s.entity.MaxAcceleration() {
+		steering.linear = steering.linear.Normalize().Scale(s.entity.MaxAcceleration())
 	}
 	return steering
 }

@@ -1,7 +1,8 @@
-package main
+package physics
 
 import (
 	. "github.com/stojg/pants/vector"
+//	. "github.com/stojg/pants/physics"
 	"math"
 )
 
@@ -11,6 +12,10 @@ type ForceGenerator interface {
 
 type StaticForce struct {
 	force *Vec2
+}
+
+func (sf *StaticForce) SetForce(a *Vec2) {
+	sf.force = a
 }
 
 func (pg *StaticForce) UpdateForce(p *Physics, duration float64) {

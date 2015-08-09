@@ -63,6 +63,7 @@ func (c *connection) handleInputRequest(msg map[string]interface{}) {
 		log.Printf("error: could not decode incoming message: %s", err)
 	}
 	sprite, ok := entityManager.sprites[request.Id]
+
 	if !ok {
 		log.Printf("error: no sprite with id %d for input command", request.Id)
 		return

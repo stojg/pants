@@ -14,7 +14,7 @@ type hub struct {
 	broadcast   chan []byte          // Inbound messages from the connections.
 	register    chan *connection     // Register requests from the connections.
 	unregister  chan *connection     // Unregister requests from connections.
-	list        *EntityManager
+	entityManager *EntityManager
 }
 
 var h = hub{
@@ -24,8 +24,8 @@ var h = hub{
 	connections: make(map[*connection]bool),
 }
 
-func (h *hub) run(list *EntityManager) {
-	h.list = list
+func (h *hub) run(em *EntityManager) {
+	h.entityManager = em
 	for {
 		select {
 		case c := <-h.register:
@@ -54,7 +54,7 @@ func (h *hub) run(list *EntityManager) {
 func (h *hub) SendAll(c *connection) {
 	t := &Message{
 		Topic:     "all",
-		Data:      entityManager.all(),
+		Data:      h.entityManager.all(),
 		Timestamp: float64(time.Now().UnixNano()) / 1000000,
 	}
 	msg, _ := bson.Marshal(t)

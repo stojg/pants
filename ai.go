@@ -2,6 +2,7 @@ package main
 
 import (
 	"time"
+	. "github.com/stojg/pants/physics"
 )
 
 type State int
@@ -52,7 +53,7 @@ func (d *AIDrunkard) handleState(s *Sprite, w *World, t float64) {
 	}
 	if o != nil {
 		w.Physic(s.Id).AddForce(o.linear.Scale(w.Physic(s.Id).Mass()))
-		w.Physic(s.Id).rotations = o.angular
+		w.Physic(s.Id).SetRotations(o.angular)
 	}
 }
 

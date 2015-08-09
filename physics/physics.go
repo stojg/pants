@@ -1,9 +1,13 @@
-package main
+package physics
 
 import (
 	. "github.com/stojg/pants/vector"
 	"math"
 )
+
+type DebugWriter interface {
+	Line(*Vec2, *Vec2)
+}
 
 type Physics struct {
 	Position        *Vec2
@@ -66,30 +70,32 @@ func (c *Physics) getPosition(a *Vec2) {
 	a.Copy(c.Position)
 }
 
-func (c *Physics) Update(sprite *Sprite, w *World, duration float64) {
+func (c *Physics) Update(id uint64, w DebugWriter, duration float64) bool {
 
-	//	if c.Velocity.Length() > 1 {
-	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
-	//	}
+	if c.Velocity.Length() > 1 {
+		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
+	}
 
-	//	if c.forces.Length() > 1 {
-	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10).Multiply(-1)))
-	//	}
+	if c.forces.Length() > 1 {
+		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10).Multiply(-1)))
+	}
 
-	c.integrate(sprite, duration)
+	c.integrate(id, duration)
 
+	updated := false
 	// mark as updated
 	if !c.Position.Equals(c.prevPosition) {
 		c.prevPosition.Copy(c.Position)
-		entityManager.updated[sprite.Id] = true
+		updated = true
 	}
 	if math.Abs(c.prevOrientation-c.Orientation) < EPSILON {
 		c.prevOrientation = c.Orientation
-		entityManager.updated[sprite.Id] = true
+		updated = true
 	}
+	return updated
 }
 
-func (c *Physics) integrate(sprite *Sprite, duration float64) {
+func (c *Physics) integrate(id uint64, duration float64) {
 	if c.invMass <= 0 {
 		return
 	}
@@ -122,16 +128,28 @@ func (c *Physics) Mass() float64 {
 	return 1 / c.invMass
 }
 
-func (c *Physics) setMass(m float64) {
+func (c *Physics) SetMass(m float64) {
 	c.invMass = 1 / m
 }
 
-func (c *Physics) setDamping(d float64) {
+func (c *Physics) SetDamping(d float64) {
 	c.damping = d
 }
 
-func (c *Physics) setAcceleration(a *Vec2) {
+func (c *Physics) SetAcceleration(a *Vec2) {
 	c.acceleration = a
+}
+
+func (p *Physics) MaxAcceleration() float64 {
+	return p.maxAcceleration
+}
+
+func (p *Physics) MaxVelocity() float64 {
+	return p.maxVelocity
+}
+
+func (c *Physics) SetRotations(a float64) {
+	c.rotations = a
 }
 
 func (c *Physics) AddForce(v *Vec2) {

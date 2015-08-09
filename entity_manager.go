@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/stojg/pants/vector"
+	. "github.com/stojg/pants/physics"
 )
 
 func NewEntityManager() *EntityManager {
@@ -28,9 +29,8 @@ type EntityManager struct {
 var gravity *StaticForce
 
 func init() {
-	gravity = &StaticForce{
-		force: &Vec2{0, 10},
-	}
+	gravity = &StaticForce{}
+	gravity.SetForce(&Vec2{0, 10})
 }
 
 func (s *EntityManager) NewEntity(x, y float64, image string) uint64 {
@@ -44,7 +44,7 @@ func (s *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	s.sprites[sprite.Id] = sprite
 	s.ais[sprite.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
 	s.physics[sprite.Id] = NewPhysics(x, y, 3.14*2, 1)
-	s.physics[sprite.Id].setDamping(0.99)
+	s.physics[sprite.Id].SetDamping(0.99)
 	s.forceRegistry.Add(s.physics[sprite.Id], gravity)
 	s.updated[sprite.Id] = true
 	return sprite.Id
@@ -77,6 +77,9 @@ func (s *EntityManager) Update(w *World, duration, gameTime float64) {
 		s.ais[sprite.Id].Update(sprite, w, duration)
 	}
 	for _, sprite := range s.sprites {
-		s.physics[sprite.Id].Update(sprite, w, duration)
+		moved := s.physics[sprite.Id].Update(sprite.Id, w, duration)
+		if moved {
+			s.updated[sprite.Id] = true
+		}
 	}
 }
