@@ -5,14 +5,6 @@ import (
 	. "github.com/stojg/pants/physics"
 )
 
-type CollisionContact struct {
-	hit bool
-	a   CollisionGeometry
-	b   CollisionGeometry
-}
-
-type CollisionTestFunc func(CollisionGeometry, CollisionGeometry) *CollisionContact
-
 type CollisionManager struct {
 	physics []*Physics
 }
@@ -29,8 +21,7 @@ func (cm *CollisionManager) Remove(p *Physics) {
 	}
 }
 
-func (cm *CollisionManager) ContactPair(g1, g2 CollisionGeometry) (*CollisionContact, error) {
-
+func (cm *CollisionManager) ContactPair(g1, g2 Geometry) (*Contact, error) {
 	switch g1.(type) {
 	case *Circle:
 		switch g2.(type) {
@@ -49,7 +40,7 @@ func (cm *CollisionManager) Update(duration float64) {
 
 }
 
-func (cm *CollisionManager) getCollisionGeometry(p *Physics) (CollisionGeometry, error) {
+func (cm *CollisionManager) Geometry(p *Physics) (Geometry, error) {
 	circle := &Circle{
 		position: p.Position.Clone(),
 		radius:   10,

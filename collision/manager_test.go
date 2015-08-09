@@ -35,7 +35,7 @@ func TestCMUpdate(t *testing.T) {
 func TestGetCollisionGeometry(t *testing.T) {
 	cm := &CollisionManager{}
 	p1 := NewPhysics(0, 0, 0, 0)
-	geometry, err := cm.getCollisionGeometry(p1)
+	geometry, err := cm.Geometry(p1)
 	if err != nil {
 		t.Errorf("getCollisionGeometry returned error: '%s'", err)
 	}
@@ -46,8 +46,8 @@ func TestGetCollisionGeometry(t *testing.T) {
 
 func TestContactPairHit(t *testing.T) {
 	cm := &CollisionManager{}
-	g1, _ := cm.getCollisionGeometry(NewPhysics(0, 0, 0, 0))
-	g2, _ := cm.getCollisionGeometry(NewPhysics(0, 0, 0, 0))
+	g1, _ := cm.Geometry(NewPhysics(0, 0, 0, 0))
+	g2, _ := cm.Geometry(NewPhysics(0, 0, 0, 0))
 	_, err := cm.ContactPair(g1, g2)
 	if err != nil {
 		t.Errorf("Error reported %s", err)

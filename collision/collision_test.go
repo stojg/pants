@@ -21,8 +21,8 @@ var circleVsCircleTests = []struct {
 func TestCircleVsCircle(t *testing.T) {
 	for _, td := range circleVsCircleTests {
 		contact := CircleVsCircle(td.a, td.b)
-		if contact.hit != td.hit {
-			t.Errorf("Expected %#v vs %#v to be %t, got %t", td.a, td.b, td.hit, contact.hit)
+		if (contact == nil) == td.hit {
+			t.Errorf("Expected %#v vs %#v to be %t", td.a, td.b, td.hit)
 		}
 	}
 }

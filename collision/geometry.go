@@ -4,7 +4,7 @@ import (
 	. "github.com/stojg/pants/vector"
 )
 
-type CollisionGeometry interface{}
+type Geometry interface{}
 
 func NewCircle(x, y, radius float64) *Circle {
 	return &Circle{
