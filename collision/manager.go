@@ -2,30 +2,43 @@ package collision
 
 import (
 	"fmt"
-	"github.com/stojg/pants/vector"
 	. "github.com/stojg/pants/physics"
 )
-type CollisionGeometry interface {}
 
-type CollisionCircle struct {
-	position *vector.Vec2
-	radius float64
+type CollisionContact struct {
+	hit bool
+	a   CollisionGeometry
+	b   CollisionGeometry
 }
+
+type CollisionTestFunc func(CollisionGeometry, CollisionGeometry) *CollisionContact
 
 type CollisionManager struct {
 	physics []*Physics
 }
 
-func (cm *CollisionManager) Add(p *Physics){
+func (cm *CollisionManager) Add(p *Physics) {
 	cm.physics = append(cm.physics, p)
 }
 
-func (cm *CollisionManager) Remove(p *Physics){
+func (cm *CollisionManager) Remove(p *Physics) {
 	for i, obj := range cm.physics {
 		if obj == p {
 			cm.physics = append(cm.physics[:i], cm.physics[i+1:]...)
 		}
 	}
+}
+
+func (cm *CollisionManager) ContactPair(g1, g2 CollisionGeometry) (*CollisionContact, error) {
+
+	switch g1.(type) {
+	case *Circle:
+		switch g2.(type) {
+		case *Circle:
+			return CircleVsCircle(g1.(*Circle), g2.(*Circle)), nil
+		}
+	}
+	return nil, fmt.Errorf("No contact pair found")
 }
 
 func (cm *CollisionManager) Length() int {
@@ -37,10 +50,9 @@ func (cm *CollisionManager) Update(duration float64) {
 }
 
 func (cm *CollisionManager) getCollisionGeometry(p *Physics) (CollisionGeometry, error) {
-
-	circle := &CollisionCircle{
+	circle := &Circle{
 		position: p.Position.Clone(),
-		radius: 20,
+		radius:   10,
 	}
 	return circle, nil
 
