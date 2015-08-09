@@ -16,7 +16,6 @@ type StateMachine struct {
 }
 
 func (sm *StateMachine) SetState(state State) {
-	//	log.Printf("State changing from %d to %d after %s", sm.state, state, sm.Duration())
 	sm.state = state
 	sm.timer = time.Now()
 }
