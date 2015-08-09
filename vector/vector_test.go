@@ -130,12 +130,12 @@ func TestSub(t *testing.T) {
 
 var scaleTests = []struct {
 	in     *Vec2
-	alpha    float64
+	alpha  float64
 	result *Vec2
 }{
-	{&Vec2{0, 0},1, &Vec2{0, 0}},
-	{&Vec2{1, 1},1, &Vec2{1, 1}},
-	{&Vec2{1, 1},0.5, &Vec2{0.5, 0.5}},
+	{&Vec2{0, 0}, 1, &Vec2{0, 0}},
+	{&Vec2{1, 1}, 1, &Vec2{1, 1}},
+	{&Vec2{1, 1}, 0.5, &Vec2{0.5, 0.5}},
 	{&Vec2{1, 0}, 2, &Vec2{2, 0}},
 	{&Vec2{1, 1}, 2, &Vec2{2, 2}},
 	{&Vec2{2, 1}, 2, &Vec2{4, 2}},
@@ -152,7 +152,7 @@ func TestScale(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	original := &Vec2{1,2}
+	original := &Vec2{1, 2}
 	copy := &Vec2{}
 	original.Copy(copy)
 	if !copy.Equals(original) {
@@ -165,7 +165,7 @@ func TestCopy(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	original := &Vec2{1,2}
+	original := &Vec2{1, 2}
 	original.Clear()
 	expected := &Vec2{}
 	if !original.Equals(expected) {
@@ -174,7 +174,7 @@ func TestClear(t *testing.T) {
 }
 
 func TestClone(t *testing.T) {
-	original := &Vec2{1,2}
+	original := &Vec2{1, 2}
 	copy := original.Clone()
 	if !copy.Equals(original) {
 		t.Errorf("vec2.Copy() copy %v != original %v ", copy, original)
@@ -190,14 +190,14 @@ var lengthTests = []struct {
 	out float64
 }{
 	{&Vec2{}, 0},
-	{&Vec2{1,0}, 1},
-	{&Vec2{-1,0}, 1},
-	{&Vec2{0,1}, 1},
-	{&Vec2{0,-1}, 1},
-	{&Vec2{3,0}, 3},
-	{&Vec2{0,3}, 3},
-	{&Vec2{1,1}, math.Sqrt(1 + 1)},
-	{&Vec2{-1,-1}, math.Sqrt(1 + 1)},
+	{&Vec2{1, 0}, 1},
+	{&Vec2{-1, 0}, 1},
+	{&Vec2{0, 1}, 1},
+	{&Vec2{0, -1}, 1},
+	{&Vec2{3, 0}, 3},
+	{&Vec2{0, 3}, 3},
+	{&Vec2{1, 1}, math.Sqrt(1 + 1)},
+	{&Vec2{-1, -1}, math.Sqrt(1 + 1)},
 }
 
 func TestLength(t *testing.T) {
@@ -214,14 +214,14 @@ var squareLengthTests = []struct {
 	out float64
 }{
 	{&Vec2{}, 0},
-	{&Vec2{1,0}, 1},
-	{&Vec2{-1,0}, 1},
-	{&Vec2{0,1}, 1},
-	{&Vec2{0,-1}, 1},
-	{&Vec2{3,0}, 9},
-	{&Vec2{0,3}, 9},
-	{&Vec2{1,1}, (1 + 1)},
-	{&Vec2{-1,-1},(1 + 1)},
+	{&Vec2{1, 0}, 1},
+	{&Vec2{-1, 0}, 1},
+	{&Vec2{0, 1}, 1},
+	{&Vec2{0, -1}, 1},
+	{&Vec2{3, 0}, 9},
+	{&Vec2{0, 3}, 9},
+	{&Vec2{1, 1}, (1 + 1)},
+	{&Vec2{-1, -1}, (1 + 1)},
 }
 
 func TestSquareLength(t *testing.T) {
@@ -238,12 +238,12 @@ var toOrientationTests = []struct {
 	out float64
 }{
 	{&Vec2{}, math.Pi},
-	{&Vec2{1,0}, math.Pi/2},
-	{&Vec2{-1,0}, -math.Pi/2},
-	{&Vec2{0,1}, math.Pi},
-	{&Vec2{0,-1}, 0},
-	{&Vec2{3,0}, math.Pi/2},
-	{&Vec2{0,3}, math.Pi},
+	{&Vec2{1, 0}, math.Pi / 2},
+	{&Vec2{-1, 0}, -math.Pi / 2},
+	{&Vec2{0, 1}, math.Pi},
+	{&Vec2{0, -1}, 0},
+	{&Vec2{3, 0}, math.Pi / 2},
+	{&Vec2{0, 3}, math.Pi},
 }
 
 func TestToOrientation(t *testing.T) {

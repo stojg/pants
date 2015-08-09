@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	. "github.com/stojg/pants/physics"
+	"testing"
 )
 
 func TestArrive(t *testing.T) {

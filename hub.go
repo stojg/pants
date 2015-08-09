@@ -10,10 +10,10 @@ import (
 // hub maintains the set of active connections and broadcasts messages to the
 // connections.
 type hub struct {
-	connections map[*connection]bool // Registered connections.
-	broadcast   chan []byte          // Inbound messages from the connections.
-	register    chan *connection     // Register requests from the connections.
-	unregister  chan *connection     // Unregister requests from connections.
+	connections   map[*connection]bool // Registered connections.
+	broadcast     chan []byte          // Inbound messages from the connections.
+	register      chan *connection     // Register requests from the connections.
+	unregister    chan *connection     // Unregister requests from connections.
 	entityManager *EntityManager
 }
 

@@ -1,8 +1,8 @@
 package main
 
 import (
-	. "github.com/stojg/pants/vector"
 	. "github.com/stojg/pants/physics"
+	. "github.com/stojg/pants/vector"
 )
 
 // SteeringOutput is what every steering behaviour will return. It contains the

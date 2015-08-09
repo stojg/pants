@@ -1,8 +1,8 @@
 package physics
 
 import (
-	"math"
 	. "github.com/stojg/pants/vector"
+	"math"
 )
 
 type SpringForce struct {

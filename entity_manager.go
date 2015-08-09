@@ -1,8 +1,8 @@
 package main
 
 import (
-	. "github.com/stojg/pants/vector"
 	. "github.com/stojg/pants/physics"
+	. "github.com/stojg/pants/vector"
 )
 
 func NewEntityManager() *EntityManager {

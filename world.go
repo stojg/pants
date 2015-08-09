@@ -1,8 +1,8 @@
 package main
 
 import (
-	. "github.com/stojg/pants/vector"
 	. "github.com/stojg/pants/physics"
+	. "github.com/stojg/pants/vector"
 	"log"
 	"math/rand"
 	"time"
@@ -18,19 +18,19 @@ func NewWorld(list *EntityManager) *World {
 		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
 		//		rand:       rand.New(rand.NewSource(1)),
 		entityManager: list,
-		director: &Director{},
+		director:      &Director{},
 	}
 }
 
 type World struct {
-	netTicked  time.Time
-	netTick    uint64
-	gameTicked time.Time
-	gameTick   uint64
+	netTicked     time.Time
+	netTick       uint64
+	gameTicked    time.Time
+	gameTick      uint64
 	entityManager *EntityManager
-	rand       *rand.Rand
-	director   *Director
-	debug      []*Line
+	rand          *rand.Rand
+	director      *Director
+	debug         []*Line
 }
 
 type EntityUpdate struct {

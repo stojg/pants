@@ -1,8 +1,8 @@
 package main
 
 import (
-	"time"
 	. "github.com/stojg/pants/physics"
+	"time"
 )
 
 type State int
