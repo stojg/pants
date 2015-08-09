@@ -90,7 +90,7 @@ func (w *World) worldTick() {
 		accumulator += frameTime
 		for accumulator >= dt {
 			// Individual entities
-			w.entityManager.Update(w, dt, gameTime)
+			w.entityManager.Update(w, dt)
 			accumulator -= (dt)
 			gameTime += dt
 		}

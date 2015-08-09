@@ -3,6 +3,7 @@ package main
 import (
 	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/vector"
+	"github.com/stojg/pants/collision"
 )
 
 func NewEntityManager() *EntityManager {
@@ -12,6 +13,7 @@ func NewEntityManager() *EntityManager {
 		physics:       make(map[uint64]*Physics),
 		updated:       make(map[uint64]bool),
 		forceRegistry: &PhysicsForceRegistry{},
+		collisionManager: &collision.CollisionManager{},
 	}
 }
 
@@ -24,6 +26,7 @@ type EntityManager struct {
 	physics       map[uint64]*Physics
 	updated       map[uint64]bool
 	forceRegistry *PhysicsForceRegistry
+	collisionManager *collision.CollisionManager
 }
 
 var gravity *StaticForce
@@ -47,6 +50,7 @@ func (s *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	s.physics[sprite.Id].SetDamping(0.99)
 	s.forceRegistry.Add(s.physics[sprite.Id], gravity)
 	s.updated[sprite.Id] = true
+	s.collisionManager.Add(s.physics[sprite.Id])
 	return sprite.Id
 }
 
@@ -69,17 +73,21 @@ func (s *EntityManager) all() []*EntityUpdate {
 	return entities
 }
 
-func (s *EntityManager) Update(w *World, duration, gameTime float64) {
+func (s *EntityManager) Update(w *World, duration float64) {
 
 	s.forceRegistry.Update(duration)
 
 	for _, sprite := range s.sprites {
 		s.ais[sprite.Id].Update(sprite, w, duration)
 	}
+
 	for _, sprite := range s.sprites {
 		moved := s.physics[sprite.Id].Update(sprite.Id, w, duration)
 		if moved {
 			s.updated[sprite.Id] = true
 		}
 	}
+
+	s.collisionManager.DetectCollisions(duration)
+	s.collisionManager.ResolveCollisions(duration)
 }

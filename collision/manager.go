@@ -7,6 +7,7 @@ import (
 
 type CollisionManager struct {
 	physics []*Physics
+	collisions []*Contact
 }
 
 func (cm *CollisionManager) Add(p *Physics) {
@@ -21,7 +22,11 @@ func (cm *CollisionManager) Remove(p *Physics) {
 	}
 }
 
-func (cm *CollisionManager) ContactPair(g1, g2 Geometry) (*Contact, error) {
+func (cm *CollisionManager) Length() int {
+	return len(cm.physics)
+}
+
+func (cm *CollisionManager) Contact(g1, g2 Geometry) (*Contact, error) {
 	switch g1.(type) {
 	case *Circle:
 		switch g2.(type) {
@@ -32,12 +37,18 @@ func (cm *CollisionManager) ContactPair(g1, g2 Geometry) (*Contact, error) {
 	return nil, fmt.Errorf("No contact pair found")
 }
 
-func (cm *CollisionManager) Length() int {
-	return len(cm.physics)
+func (cm *CollisionManager) DetectCollisions(duration float64) {
+	// todo(stig): do broad phase detection here
+
+	// todo(stig): implement fine phase detection here
+	for _, _ = range cm.physics {
+	}
 }
 
-func (cm *CollisionManager) Update(duration float64) {
-
+func (cm *CollisionManager) ResolveCollisions(duration float64) {
+	// todo(stig): implement contact resolution here
+	for _, _ = range cm.collisions {
+	}
 }
 
 func (cm *CollisionManager) Geometry(p *Physics) (Geometry, error) {
@@ -46,6 +57,4 @@ func (cm *CollisionManager) Geometry(p *Physics) (Geometry, error) {
 		radius:   10,
 	}
 	return circle, nil
-
-	return nil, fmt.Errorf("No collision geometry found for %v", p)
 }
