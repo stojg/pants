@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func randomRectangles(n int, frame *Rectangle, avgSize float64) []*Rectangle {
+func randomRectangles(n int, world *Rectangle, avgSize float64) []*Rectangle {
 	ret := make([]*Rectangle, n)
 	for i := 0; i < len(ret); i++ {
 		w := rand.NormFloat64() * avgSize
 		h := rand.NormFloat64() * avgSize
-		x := rand.Float64()*frame.halfWidth*2 + frame.minX
-		y := rand.Float64()*frame.halfHeight*2 + frame.minY
-		ret[i] = NewRectangle(x, math.Min(frame.maxX, x+w), y, math.Min(frame.maxY, y+h))
+		x := rand.Float64() * world.maxX
+		y := rand.Float64() * world.maxY
+		ret[i] = NewRectangle(x, math.Min(world.maxX, x+w), y, math.Min(world.maxY, y+h))
 	}
 	return ret
 }
@@ -22,11 +22,11 @@ func TestClear(t *testing.T) {
 	qt := NewQuadTree(0, NewRectangle(50, 50, 50, 50))
 	object := NewRectangle(50, 50, 10, 10)
 	qt.Insert(object)
-	if len(qt.rectangles) != 1 {
+	if len(qt.objects) != 1 {
 		t.Errorf("Expected 1 object to be returned")
 	}
 	qt.Clear()
-	if len(qt.rectangles) != 0 {
+	if len(qt.objects) != 0 {
 		t.Errorf("Expected 0 object to be returned")
 	}
 }
@@ -180,10 +180,10 @@ func benchInsertRand(i int, b *testing.B) {
 	}
 }
 
-func BenchmarkInsertRand1(b *testing.B) { benchInsertRand(1, b) }
-func BenchmarkInsertRand2(b *testing.B) { benchInsertRand(2, b) }
-func BenchmarkInsertRand4(b *testing.B) { benchInsertRand(4, b) }
-func BenchmarkInsertRand8(b *testing.B) { benchInsertRand(8, b) }
+func BenchmarkInsertRand1(b *testing.B)  { benchInsertRand(1, b) }
+func BenchmarkInsertRand2(b *testing.B)  { benchInsertRand(2, b) }
+func BenchmarkInsertRand4(b *testing.B)  { benchInsertRand(4, b) }
+func BenchmarkInsertRand8(b *testing.B)  { benchInsertRand(8, b) }
 func BenchmarkInsertRand16(b *testing.B) { benchInsertRand(16, b) }
 func BenchmarkInsertRand32(b *testing.B) { benchInsertRand(32, b) }
 

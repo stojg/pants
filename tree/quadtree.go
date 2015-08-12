@@ -1,3 +1,4 @@
+// Package tree provides spatial search tree implementations
 package tree
 
 import (
@@ -17,25 +18,25 @@ const (
 )
 
 type QuadTree struct {
-	bounds     *Rectangle
-	rectangles []*Rectangle
-	nodes      map[int]*QuadTree
-	level      int
+	bounds  *Rectangle
+	objects []*Rectangle
+	nodes   map[int]*QuadTree
+	level   int
 }
 
-func NewQuadTree(pLevel int, b *Rectangle) *QuadTree {
+// NewQuadTree creates a new quad tree at level pLevel and bounds
+func NewQuadTree(pLevel int, bounds *Rectangle) *QuadTree {
 	return &QuadTree{
-		level:      pLevel,
-		bounds:     b,
-		rectangles: make([]*Rectangle, 0),
-		nodes:      make(map[int]*QuadTree, 4),
+		level:   pLevel,
+		bounds:  bounds,
+		objects: make([]*Rectangle, 0),
+		nodes:   make(map[int]*QuadTree, 4),
 	}
 }
 
 /*
- * Insert the object into the QuadTree. If the node
- * exceeds the capacity, it will split and add all
- * objects to their corresponding nodes.
+ * Insert the object into the QuadTree. If the node exceeds the capacity, it
+ * will split and push objects into the sub nodes
  */
 func (q *QuadTree) Insert(rectangle *Rectangle) {
 	// There are sub-nodes so push the object down to one of them if it
@@ -47,43 +48,55 @@ func (q *QuadTree) Insert(rectangle *Rectangle) {
 			return
 		}
 	}
-	q.rectangles = append(q.rectangles, rectangle)
+	// object didn't fit into the any of the sub-nodes, so push in into this
+	// node
+	q.objects = append(q.objects, rectangle)
 
 	// We hit the objects limit and are still allowed to create more nodes,
 	// split and push objects into sub-nodes
-	if len(q.rectangles) > MAX_OBJECTS && q.level < MAX_LEVELS {
+	if len(q.objects) > MAX_OBJECTS && q.level < MAX_LEVELS {
 		// there are no sub nodes in this node
 		if len(q.nodes) == 0 {
 			q.split()
 		}
-		for i := len(q.rectangles) - 1; i >= 0; i-- {
-			index := q.index(q.rectangles[i])
+		for i := len(q.objects) - 1; i >= 0; i-- {
+			index := q.index(q.objects[i])
 			if index != -1 {
-				q.nodes[index].Insert(q.rectangles[i])
-				q.rectangles = append(q.rectangles[:i], q.rectangles[i+1:]...)
+				q.nodes[index].Insert(q.objects[i])
+				q.objects = append(q.objects[:i], q.objects[i+1:]...)
 			}
 		}
 	}
 }
 
-// Retrieve will find all intersecting rectangles
-func (q *QuadTree) Retrieve(rect *Rectangle, result *[]*Rectangle) {
-	*result = append(*result, q.rectangles...)
+/**
+ * Retrieve will populate the result with the triangles that intersects with
+ * the rectangle
+ */
+func (q *QuadTree) Retrieve(rectangle *Rectangle, result *[]*Rectangle) {
+	*result = append(*result, q.objects...)
 	for _, node := range q.nodes {
-		if node.bounds.Intersects(rect) {
-			node.Retrieve(rect, result)
+		if node.bounds.Intersects(rectangle) {
+			node.Retrieve(rectangle, result)
 		}
 	}
 }
 
+/**
+ * Clear will remove all objects and sub-nodes from this node and sub-nodes
+ * recursively
+ */
 func (q *QuadTree) Clear() {
-	q.rectangles = make([]*Rectangle, 0)
+	q.objects = make([]*Rectangle, 0)
 	for _, node := range q.nodes {
 		node.Clear()
 	}
 	q.nodes = make(map[int]*QuadTree, 4)
 }
 
+/**
+ * Boundaries will return all "rectangles" in this tree
+ */
 func (q *QuadTree) Boundaries() []*Rectangle {
 	boundaries := make([]*Rectangle, 0)
 	boundaries = append(boundaries, q.bounds)
@@ -93,12 +106,15 @@ func (q *QuadTree) Boundaries() []*Rectangle {
 	return boundaries
 }
 
+/**
+ * Debug will print a debug out to the console
+ */
 func (q *QuadTree) Debug() {
-	for _, obj := range q.rectangles {
+	for _, obj := range q.objects {
 		for i := 0; i < q.level; i++ {
 			fmt.Print("\t")
 		}
-		fmt.Printf("object x:%d y:%d w:%d h:%d\n", int(obj.position.X), int(obj.position.Y), int(obj.halfWidth*2), int(obj.halfHeight*2))
+		fmt.Printf("object x:%d y:%d w:%d h:%d\n", int(obj.position.X), int(obj.position.Y), int(obj.maxX-obj.minX), int(obj.maxY-obj.minY))
 	}
 	for index, node := range q.nodes {
 		for i := 0; i < node.level; i++ {
@@ -116,19 +132,19 @@ func (q *QuadTree) Debug() {
  */
 func (q *QuadTree) index(r *Rectangle) int {
 	// Object can completely fit within the left quadrants
-	left := (r.position.X < q.bounds.position.X) && (r.position.X+r.halfWidth < q.bounds.position.X)
+	left := (r.position.X < q.bounds.position.X) && (r.maxX < q.bounds.position.X)
 	// Object can completely fit within the top quadrants
-	top := (r.position.Y < q.bounds.position.Y) && (r.position.Y+r.halfHeight < q.bounds.position.Y)
+	top := (r.position.Y < q.bounds.position.Y) && (r.maxY < q.bounds.position.Y)
 	if top && left {
 		return TOP_LEFT
 	}
 	// Object can completely fit within the right quadrants
-	right := (r.position.X > q.bounds.position.X) && (r.position.X-r.halfWidth > q.bounds.position.X)
+	right := (r.position.X > q.bounds.position.X) && (r.minX > q.bounds.position.X)
 	if top && right {
 		return TOP_RIGHT
 	}
 	// Object can completely fit within the bottom quadrants
-	bottom := (r.position.Y > q.bounds.position.Y) && (r.position.Y-r.halfHeight > q.bounds.position.Y)
+	bottom := (r.position.Y > q.bounds.position.Y) && (r.minY > q.bounds.position.Y)
 	if bottom && left {
 		return BOTTOM_LEFT
 	}
@@ -141,8 +157,8 @@ func (q *QuadTree) index(r *Rectangle) int {
 
 // split creates four sub-nodes for this node
 func (q *QuadTree) split() {
-	subWidth := q.bounds.halfWidth / 2
-	subHeight := q.bounds.halfHeight / 2
+	subWidth := q.bounds.maxX - q.bounds.minX
+	subHeight := q.bounds.maxY - q.bounds.minY
 	x := q.bounds.position.X
 	y := q.bounds.position.Y
 	q.nodes[TOP_LEFT] = NewQuadTree(q.level+1, NewRectangle(x-subWidth, y-subHeight, subWidth, subHeight))
