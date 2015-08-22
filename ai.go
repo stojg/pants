@@ -14,7 +14,7 @@ const (
 )
 
 type AI interface {
-	Update(s *Sprite, w *World, t float64)
+	Update(s *Entity, w *World, t float64)
 }
 
 type AIDrunkard struct {
@@ -22,12 +22,12 @@ type AIDrunkard struct {
 	steering Steering
 }
 
-func (d *AIDrunkard) Update(s *Sprite, w *World, t float64) {
+func (d *AIDrunkard) Update(s *Entity, w *World, t float64) {
 	d.handleInputs(s)
 	d.handleState(s, w, t)
 }
 
-func (d *AIDrunkard) handleInputs(s *Sprite) {
+func (d *AIDrunkard) handleInputs(s *Entity) {
 	for _, input := range s.inputs {
 		switch input.Action {
 		case "mouseOver":
@@ -41,7 +41,7 @@ func (d *AIDrunkard) handleInputs(s *Sprite) {
 	s.inputs = nil
 }
 
-func (d *AIDrunkard) handleState(s *Sprite, w *World, t float64) {
+func (d *AIDrunkard) handleState(s *Entity, w *World, t float64) {
 	var o *SteeringOutput
 	switch d.state.State() {
 	case STATE_IDLE:
@@ -57,7 +57,7 @@ func (d *AIDrunkard) handleState(s *Sprite, w *World, t float64) {
 	}
 }
 
-func (d *AIDrunkard) flee(w *World, s *Sprite, duration float64) *SteeringOutput {
+func (d *AIDrunkard) flee(w *World, s *Entity, duration float64) *SteeringOutput {
 	if d.state.Duration() > 1*time.Second {
 		d.steering = nil
 		d.state.SetState(STATE_IDLE)
@@ -65,12 +65,12 @@ func (d *AIDrunkard) flee(w *World, s *Sprite, duration float64) *SteeringOutput
 	}
 
 	if _, ok := d.steering.(*Flee); !ok {
-		d.steering = NewFlee(w.Physic(s.Id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0))
+		d.steering = NewFlee(w.Physic(s.Id), NewPhysics(w.RandF64(1000), w.RandF64(1000), 0, 0))
 	}
 	return d.steering.Get(duration)
 }
 
-func (d *AIDrunkard) idle(w *World, s *Sprite, duration float64) *SteeringOutput {
+func (d *AIDrunkard) idle(w *World, s *Entity, duration float64) *SteeringOutput {
 	if d.state.Duration() > 3*time.Second {
 		d.steering = nil
 		d.state.SetState(STATE_HUNT)
@@ -82,7 +82,7 @@ func (d *AIDrunkard) idle(w *World, s *Sprite, duration float64) *SteeringOutput
 	return d.steering.Get(duration)
 }
 
-func (d *AIDrunkard) hunt(w *World, s *Sprite, duration float64) *SteeringOutput {
+func (d *AIDrunkard) hunt(w *World, s *Entity, duration float64) *SteeringOutput {
 	if _, ok := d.steering.(*Arrive); !ok {
 		d.steering = NewArrive(w.Physic(s.Id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0), 1, 500)
 	}

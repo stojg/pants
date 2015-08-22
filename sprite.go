@@ -13,7 +13,7 @@ type Line struct {
 	End      *Vec2
 }
 
-type Sprite struct {
+type Entity struct {
 	Id     uint64 `bson:",minsize"`
 	Image  string `bson:",minsize,omitempty"`
 	Dead   bool
@@ -21,11 +21,11 @@ type Sprite struct {
 	Type   string
 }
 
-func (s *Sprite) Kill() {
+func (s *Entity) Kill() {
 	s.Dead = true
 	entityManager.updated[s.Id] = true
 }
 
-func (s *Sprite) AddInput(i *InputRequest) {
+func (s *Entity) AddInput(i *InputRequest) {
 	s.inputs = append(s.inputs, i)
 }

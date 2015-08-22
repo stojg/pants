@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/stojg/pants/network"
 	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/vector"
 	"log"
@@ -10,27 +11,30 @@ import (
 
 const NetFPS = 50 * time.Millisecond
 
-func NewWorld(list *EntityManager) *World {
-	current := time.Now()
+func NewWorld(list *EntityManager, s *network.Server) *World {
+	currentTime := time.Now()
 	return &World{
-		netTicked:  current,
-		gameTicked: current,
-		rand:       rand.New(rand.NewSource(time.Now().UnixNano())),
-		//		rand:       rand.New(rand.NewSource(1)),
-		entityManager: list,
-		director:      &Director{},
+		netTicked:      currentTime,
+		gameTicked:     currentTime,
+		rand:           rand.New(rand.NewSource(time.Now().UnixNano())),
+		entityManager:  list,
+		networkManager: &NetworkManager{server: s},
+		director:       &Director{},
+		server:         s,
 	}
 }
 
 type World struct {
-	netTicked     time.Time
-	netTick       uint64
-	gameTicked    time.Time
-	gameTick      uint64
-	entityManager *EntityManager
-	rand          *rand.Rand
-	director      *Director
-	debug         []*Line
+	netTicked      time.Time
+	netTick        uint64
+	gameTicked     time.Time
+	gameTick       uint64
+	entityManager  *EntityManager
+	networkManager *NetworkManager
+	rand           *rand.Rand
+	director       *Director
+	debug          []*Line
+	server         *network.Server
 }
 
 type EntityUpdate struct {
@@ -66,10 +70,14 @@ func (w *World) networkTick() {
 		}
 		w.netTicked = currentTime
 		w.netTick += 1
-		// Send a snapshot to all connections
 
-		h.SendUpdates(entityManager.updated, w, currentTime)
-		entityManager.updated = make(map[uint64]bool)
+		// handle inputs
+		w.networkManager.Inputs()
+		w.networkManager.SendState(entityManager.updated, w, currentTime)
+
+		w.entityManager.updated = make(map[uint64]bool, 0)
+		w.debug = make([]*Line, 0)
+
 	}
 }
 

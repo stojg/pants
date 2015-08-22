@@ -1,13 +1,15 @@
 package main
 
 import (
+	"github.com/stojg/pants/network"
 	"testing"
 )
 
 func TestAddSprite(t *testing.T) {
 	list := NewEntityManager()
 	spriteID := list.NewEntity(0, 0, "sprite.png")
-	w := NewWorld(list)
+	s := network.NewServer("8080")
+	w := NewWorld(list, s)
 	list.Update(w, 0.016)
 	if spriteID != 1 {
 		t.Errorf("Could not get sprite id")
@@ -20,7 +22,8 @@ func BenchmarkSpriteUpdate(b *testing.B) {
 	for i := 0; i < 100; i++ {
 		list.NewEntity(0, 0, "sprite.png")
 	}
-	w := NewWorld(list)
+	s := network.NewServer("8080")
+	w := NewWorld(list, s)
 
 	for n := 0; n < b.N; n++ {
 		list.Update(w, 0.0016)
@@ -29,6 +32,7 @@ func BenchmarkSpriteUpdate(b *testing.B) {
 
 func TestUpdate(t *testing.T) {
 	e := NewEntityManager()
-	w := NewWorld(e)
+	s := network.NewServer("8080")
+	w := NewWorld(e, s)
 	e.Update(w, 0.016)
 }

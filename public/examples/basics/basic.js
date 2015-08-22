@@ -225,6 +225,7 @@ if (window["WebSocket"]) {
 	conn = new WebSocket("ws://"+document.location.host+"/ws");
 	conn.binaryType = "blob";
 	conn.onclose = function (evt) {
+		console.log("connection closed");
 	};
 	conn.onmessage = function (evt) {
 		try {
@@ -240,6 +241,7 @@ if (window["WebSocket"]) {
 		}
 	};
 	conn.onopen = function (evt) {
+		console.log("connection opened");
 		var msg = {"topic": "time_request", "client": window.performance.now()};
 		var serialisedMsg = BSON.serialize(msg, false, true, false);
 		conn.send(serialisedMsg);

@@ -17,8 +17,8 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 	}
 	director.lastAction = gameTime
 	w.entityManager.NewEntity(
-		w.rand.Float64()*800,
-		w.rand.Float64()*600,
+		w.rand.Float64()*1000,
+		w.rand.Float64()*1000,
 		"assets/basics/arrow.png",
 	)
 }
