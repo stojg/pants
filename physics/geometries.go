@@ -1,4 +1,4 @@
-package collision
+package physics
 
 import (
 	. "github.com/stojg/pants/vector"

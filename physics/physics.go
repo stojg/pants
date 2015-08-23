@@ -72,13 +72,13 @@ func (c *Physics) getPosition(a *Vec2) {
 
 func (c *Physics) Update(id uint64, w DebugWriter, duration float64) bool {
 
-//	if c.Velocity.Length() > 1 {
-//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
-//	}
-//
-//	if c.forces.Length() > 1 {
-//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10).Multiply(-1)))
-//	}
+	//	if c.Velocity.Length() > 1 {
+	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
+	//	}
+	//
+	//	if c.forces.Length() > 1 {
+	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10).Multiply(-1)))
+	//	}
 
 	c.integrate(id, duration)
 

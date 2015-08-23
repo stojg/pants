@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/stojg/pants/collision"
 	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/vector"
 	"github.com/stojg/tree"
@@ -15,7 +14,7 @@ func NewEntityManager() *EntityManager {
 		boundingBoxes:    make(map[uint64]*tree.Rectangle),
 		updated:          make(map[uint64]bool),
 		forceRegistry:    &PhysicsForceRegistry{},
-		collisionManager: &collision.CollisionManager{},
+		collisionManager: &CollisionManager{},
 		quadTree:         tree.NewQuadTree(0, tree.NewRectangle(500, 500, 500, 500)),
 	}
 }
@@ -28,7 +27,7 @@ type EntityManager struct {
 	boundingBoxes    map[uint64]*tree.Rectangle
 	updated          map[uint64]bool
 	forceRegistry    *PhysicsForceRegistry
-	collisionManager *collision.CollisionManager
+	collisionManager *CollisionManager
 	quadTree         *tree.QuadTree
 }
 
@@ -53,6 +52,7 @@ func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	em.physics[sprite.Id].SetDamping(0.99)
 	em.forceRegistry.Add(em.physics[sprite.Id], gravity)
 	em.updated[sprite.Id] = true
+	em.collisionManager.Add(em.physics[sprite.Id])
 	return sprite.Id
 }
 
@@ -71,7 +71,7 @@ func (em *EntityManager) Update(w *World, duration float64) {
 		}
 	}
 
-	em.collisionManager.DetectCollisions(duration)
+	em.collisionManager.DetectCollisions(em.physics)
 	em.collisionManager.ResolveCollisions(duration)
 }
 

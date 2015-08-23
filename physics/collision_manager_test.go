@@ -1,7 +1,6 @@
-package collision
+package physics
 
 import (
-	. "github.com/stojg/pants/physics"
 	"testing"
 )
 

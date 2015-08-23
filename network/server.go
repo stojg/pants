@@ -13,7 +13,7 @@ const (
 func NewServer(port string) *Server {
 	return &Server{
 		port:        port,
-		broadcast:    make(chan []byte, 256),
+		broadcast:   make(chan []byte, 256),
 		incoming:    make(chan []byte, 256),
 		register:    make(chan *connection),
 		unregister:  make(chan *connection),
@@ -24,7 +24,7 @@ func NewServer(port string) *Server {
 type Server struct {
 	port        string
 	upgrader    websocket.Upgrader
-	broadcast chan []byte
+	broadcast   chan []byte
 	incoming    chan []byte
 	register    chan *connection
 	unregister  chan *connection
@@ -83,7 +83,7 @@ func (server *Server) listenAndServe() {
 }
 
 func (server *Server) send(c *connection, message []byte) {
-	c.send <-message
+	c.send <- message
 }
 
 func (server *Server) hub() {
@@ -138,8 +138,8 @@ func (server *Server) serveWs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c := &connection{
-		send: make(chan []byte, sendBufferSize),
-		ws: socket,
+		send:   make(chan []byte, sendBufferSize),
+		ws:     socket,
 		server: server,
 	}
 	server.register <- c

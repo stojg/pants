@@ -1,12 +1,12 @@
-package collision
+package physics
 
 import (
 	"fmt"
-	. "github.com/stojg/pants/physics"
+	"log"
 )
 
 type CollisionManager struct {
-	physics []*Physics
+	physics    []*Physics
 	collisions []*Contact
 }
 
@@ -37,11 +37,32 @@ func (cm *CollisionManager) Contact(g1, g2 Geometry) (*Contact, error) {
 	return nil, fmt.Errorf("No contact pair found")
 }
 
-func (cm *CollisionManager) DetectCollisions(duration float64) {
+func (cm *CollisionManager) DetectCollisions(entities map[uint64]*Physics) {
 	// todo(stig): do broad phase detection here
 
+	cm.collisions = make([]*Contact,0)
+	checked := make(map[int]map[int]bool)
+
 	// todo(stig): implement fine phase detection here
-	for _, _ = range cm.physics {
+	for idx, a := range cm.physics {
+		checked[idx] = make(map[int]bool)
+		for idy, b := range cm.physics {
+			if a == b {
+				continue
+			}
+			if checked := checked[idx][idy]; checked {
+				continue
+			}
+
+			collision, err:= cm.Contact(cm.Geometry(a), cm.Geometry(b))
+			if err != nil {
+				log.Printf("error: %s", err)
+			}
+			if collision != nil {
+				cm.collisions = append(cm.collisions, collision)
+			}
+			checked[idx][idy] = true
+		}
 	}
 }
 
@@ -51,10 +72,10 @@ func (cm *CollisionManager) ResolveCollisions(duration float64) {
 	}
 }
 
-func (cm *CollisionManager) Geometry(p *Physics) (Geometry, error) {
+func (cm *CollisionManager) Geometry(p *Physics) (Geometry) {
 	circle := &Circle{
 		position: p.Position.Clone(),
 		radius:   10,
 	}
-	return circle, nil
+	return circle
 }
