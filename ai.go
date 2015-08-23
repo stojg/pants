@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/stojg/pants/physics"
+	. "github.com/stojg/pants/ai"
 	"time"
 )
 
@@ -52,8 +53,8 @@ func (d *AIDrunkard) handleState(s *Entity, w *World, t float64) {
 		o = d.hunt(w, s, t)
 	}
 	if o != nil {
-		w.Physic(s.Id).AddForce(o.linear.Scale(w.Physic(s.Id).Mass()))
-		w.Physic(s.Id).SetRotations(o.angular)
+		w.Physic(s.Id).AddForce(o.Linear.Scale(w.Physic(s.Id).Mass()))
+		w.Physic(s.Id).SetRotations(o.Angular)
 	}
 }
 

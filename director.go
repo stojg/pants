@@ -12,7 +12,7 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		return
 	}
 
-	if len(entityManager.sprites) >= 20 {
+	if len(entityManager.sprites) >= 50 {
 		return
 	}
 	director.lastAction = gameTime

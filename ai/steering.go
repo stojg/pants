@@ -1,4 +1,4 @@
-package main
+package ai
 
 import (
 	. "github.com/stojg/pants/physics"
@@ -9,14 +9,14 @@ import (
 // linear and angular acceleration that the steering behaviour wish to set on
 // the target entity
 type SteeringOutput struct {
-	linear  *Vec2
-	angular float64
+	Linear *Vec2
+	Angular float64
 }
 
 func NewSteeringOutput() *SteeringOutput {
 	return &SteeringOutput{
-		linear:  &Vec2{},
-		angular: 0,
+		Linear:  &Vec2{},
+		Angular: 0,
 	}
 }
 
@@ -46,9 +46,9 @@ func (s *Seek) Target() *Physics {
 func (s *Seek) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
-	steering.linear = s.target.Position.Clone().Sub(s.entity.Position)
+	steering.Linear = s.target.Position.Clone().Sub(s.entity.Position)
 	// Go full speed ahead
-	steering.linear.Normalize().Scale(s.entity.MaxAcceleration())
+	steering.Linear.Normalize().Scale(s.entity.MaxAcceleration())
 	return steering
 }
 
@@ -70,9 +70,9 @@ func NewFlee(entity, target *Physics) *Flee {
 func (s *Flee) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
-	steering.linear = s.entity.Position.Clone().Sub(s.target.Position)
+	steering.Linear = s.entity.Position.Clone().Sub(s.target.Position)
 	// Go full speed ahead
-	steering.linear.Normalize().Scale(s.entity.MaxAcceleration())
+	steering.Linear.Normalize().Scale(s.entity.MaxAcceleration())
 	return steering
 }
 
@@ -136,12 +136,12 @@ func (s *Arrive) Get(dt float64) *SteeringOutput {
 	targetVelocity.Normalize().Scale(targetSpeed)
 
 	// Acceleration tries to get to the target velocity
-	steering.linear = targetVelocity.Sub(s.entity.Velocity)
+	steering.Linear = targetVelocity.Sub(s.entity.Velocity)
 	// try to get there in timeToTarget seconds
-	steering.linear.Scale(1 / s.timeToTarget)
+	steering.Linear.Scale(1 / s.timeToTarget)
 
-	if steering.linear.Length() > s.entity.MaxAcceleration() {
-		steering.linear = steering.linear.Normalize().Scale(s.entity.MaxAcceleration())
+	if steering.Linear.Length() > s.entity.MaxAcceleration() {
+		steering.Linear = steering.Linear.Normalize().Scale(s.entity.MaxAcceleration())
 	}
 	return steering
 }
