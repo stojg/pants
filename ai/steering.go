@@ -9,7 +9,7 @@ import (
 // linear and angular acceleration that the steering behaviour wish to set on
 // the target entity
 type SteeringOutput struct {
-	Linear *Vec2
+	Linear  *Vec2
 	Angular float64
 }
 

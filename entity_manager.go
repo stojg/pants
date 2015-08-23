@@ -71,8 +71,11 @@ func (em *EntityManager) Update(w *World, duration float64) {
 		}
 	}
 
-	em.collisionManager.DetectCollisions()
-	em.collisionManager.ResolveCollisions(duration)
+	tries := 0
+	if em.collisionManager.DetectCollisions() || tries > 3 {
+		tries += 1
+		em.collisionManager.ResolveCollisions(duration)
+	}
 }
 
 func (em *EntityManager) All() []*EntityUpdate {

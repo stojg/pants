@@ -36,10 +36,10 @@ func (cm *CollisionManager) Contact(g1, g2 *Physics) (*Contact, error) {
 	panic("No contact pair found")
 }
 
-func (cm *CollisionManager) DetectCollisions() {
+func (cm *CollisionManager) DetectCollisions() bool {
 	// todo(stig): do broad phase detection here
 
-	cm.collisions = make([]*Contact,0)
+	cm.collisions = make([]*Contact, 0)
 	checked := make(map[int]map[int]bool)
 
 	// todo(stig): implement fine phase detection here
@@ -52,18 +52,25 @@ func (cm *CollisionManager) DetectCollisions() {
 			if checked := checked[idx][idy]; checked {
 				continue
 			}
-			collision, err:= cm.Contact(a, b)
+			collision, err := cm.Contact(a, b)
 			if err != nil {
 				log.Printf("error: %s", err)
 			}
 			if collision != nil {
 				collision.a = a
 				collision.b = b
+				collision.restitution = 0.1
 				cm.collisions = append(cm.collisions, collision)
 			}
 			checked[idx][idy] = true
 		}
 	}
+
+	if len(cm.collisions) > 0 {
+		return true
+	}
+	return false
+
 }
 
 func (cm *CollisionManager) ResolveCollisions(duration float64) {
@@ -73,7 +80,7 @@ func (cm *CollisionManager) ResolveCollisions(duration float64) {
 	}
 }
 
-func (cm *CollisionManager) Geometry(p *Physics) (Geometry) {
+func (cm *CollisionManager) Geometry(p *Physics) Geometry {
 	circle := &Circle{
 		position: p.Position.Clone(),
 		radius:   10,

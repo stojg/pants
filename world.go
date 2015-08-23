@@ -65,7 +65,7 @@ func (w *World) networkTick() {
 	ticker := time.NewTicker(NetFPS)
 	for currentTime := range ticker.C {
 		duration := currentTime.Sub(w.netTicked)
-		if duration-NetFPS > 4*time.Millisecond {
+		if duration-NetFPS > 5*time.Millisecond {
 			log.Printf("net lag %s", duration-NetFPS)
 		}
 		w.netTicked = currentTime

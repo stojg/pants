@@ -9,7 +9,7 @@ type Contact struct {
 	b           *Physics
 	normal      *vector.Vec2
 	penetration float64
-	restitution    float64
+	restitution float64
 }
 
 func (c *Contact) Resolve(duration float64) {
@@ -100,4 +100,3 @@ func (c *Contact) SeparatingVelocity() float64 {
 	}
 	return relativeVel.Dot(c.normal)
 }
-

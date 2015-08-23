@@ -3,7 +3,7 @@ $(document).ready(function () {
 
 	params = App.getUrlParams();
 
-	document.title = 'pixi.js - ' + params.title;
+	document.title = 'Pants - ' + params.title;
 		console.log('Loading local pixi');
 		App.loadPixi('/js/vendor/pixi.min.js',onPixiLoaded);
 

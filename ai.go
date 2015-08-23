@@ -1,8 +1,8 @@
 package main
 
 import (
-	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/ai"
+	. "github.com/stojg/pants/physics"
 	"time"
 )
 
