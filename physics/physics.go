@@ -29,6 +29,8 @@ type Physics struct {
 	invMass    float64
 
 	damping float64
+
+	collisionGeometry Geometry
 }
 
 func NewPhysics(x, y, orientation, mass float64) *Physics {
@@ -38,7 +40,7 @@ func NewPhysics(x, y, orientation, mass float64) *Physics {
 		invMass = 1 / mass
 	}
 
-	return &Physics{
+	p :=  &Physics{
 		Position:        &Vec2{X: x, Y: y},
 		prevPosition:    &Vec2{X: x, Y: y},
 		Velocity:        &Vec2{0, 0},
@@ -56,7 +58,15 @@ func NewPhysics(x, y, orientation, mass float64) *Physics {
 
 		invMass: invMass,
 		damping: 0.999,
+
 	}
+
+	p.collisionGeometry = &Circle{
+		position: p.Position,
+		radius: 10,
+	}
+
+	return p
 }
 
 func (c *Physics) Clone() *Physics {

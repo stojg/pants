@@ -71,7 +71,7 @@ func (em *EntityManager) Update(w *World, duration float64) {
 		}
 	}
 
-	em.collisionManager.DetectCollisions(em.physics)
+	em.collisionManager.DetectCollisions()
 	em.collisionManager.ResolveCollisions(duration)
 }
 

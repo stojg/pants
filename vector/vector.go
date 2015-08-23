@@ -101,3 +101,7 @@ func (a *Vec2) Scale(alpha float64) *Vec2 {
 func (v *Vec2) ToOrientation() float64 {
 	return math.Atan2(v.X, -v.Y)
 }
+
+func (v *Vec2) Dot(o *Vec2) float64 {
+	return v.X*o.X + v.Y*o.Y
+}

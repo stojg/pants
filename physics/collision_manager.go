@@ -1,7 +1,6 @@
 package physics
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -26,18 +25,18 @@ func (cm *CollisionManager) Length() int {
 	return len(cm.physics)
 }
 
-func (cm *CollisionManager) Contact(g1, g2 Geometry) (*Contact, error) {
-	switch g1.(type) {
+func (cm *CollisionManager) Contact(g1, g2 *Physics) (*Contact, error) {
+	switch g1.collisionGeometry.(type) {
 	case *Circle:
-		switch g2.(type) {
+		switch g2.collisionGeometry.(type) {
 		case *Circle:
-			return CircleVsCircle(g1.(*Circle), g2.(*Circle)), nil
+			return CircleVsCircle(g1.collisionGeometry.(*Circle), g2.collisionGeometry.(*Circle)), nil
 		}
 	}
-	return nil, fmt.Errorf("No contact pair found")
+	panic("No contact pair found")
 }
 
-func (cm *CollisionManager) DetectCollisions(entities map[uint64]*Physics) {
+func (cm *CollisionManager) DetectCollisions() {
 	// todo(stig): do broad phase detection here
 
 	cm.collisions = make([]*Contact,0)
@@ -53,12 +52,13 @@ func (cm *CollisionManager) DetectCollisions(entities map[uint64]*Physics) {
 			if checked := checked[idx][idy]; checked {
 				continue
 			}
-
-			collision, err:= cm.Contact(cm.Geometry(a), cm.Geometry(b))
+			collision, err:= cm.Contact(a, b)
 			if err != nil {
 				log.Printf("error: %s", err)
 			}
 			if collision != nil {
+				collision.a = a
+				collision.b = b
 				cm.collisions = append(cm.collisions, collision)
 			}
 			checked[idx][idy] = true
@@ -68,7 +68,8 @@ func (cm *CollisionManager) DetectCollisions(entities map[uint64]*Physics) {
 
 func (cm *CollisionManager) ResolveCollisions(duration float64) {
 	// todo(stig): implement contact resolution here
-	for _, _ = range cm.collisions {
+	for _, collision := range cm.collisions {
+		collision.Resolve(duration)
 	}
 }
 

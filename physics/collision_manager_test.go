@@ -28,7 +28,9 @@ func TestCMRemove(t *testing.T) {
 
 func TestDetectCollisions(t *testing.T) {
 	cm := &CollisionManager{}
-	cm.DetectCollisions(0.016)
+	cm.Add(NewPhysics(0, 0, 0, 0))
+	cm.Add(NewPhysics(10, 0, 0, 0))
+	cm.DetectCollisions()
 }
 
 func TestResolveCollisions(t *testing.T) {
@@ -36,22 +38,10 @@ func TestResolveCollisions(t *testing.T) {
 	cm.ResolveCollisions(0.016)
 }
 
-func TestGetCollisionGeometry(t *testing.T) {
-	cm := &CollisionManager{}
-	p1 := NewPhysics(0, 0, 0, 0)
-	geometry, err := cm.Geometry(p1)
-	if err != nil {
-		t.Errorf("getCollisionGeometry returned error: '%s'", err)
-	}
-	if ty, ok := geometry.(*Circle); !ok {
-		t.Errorf("getCollisionGeometry should return a *CollisionCircle, not %s", ty)
-	}
-}
-
 func TestContactPairHit(t *testing.T) {
 	cm := &CollisionManager{}
-	g1, _ := cm.Geometry(NewPhysics(0, 0, 0, 0))
-	g2, _ := cm.Geometry(NewPhysics(0, 0, 0, 0))
+	g1 := NewPhysics(0, 0, 0, 0)
+	g2 := NewPhysics(0, 0, 0, 0)
 	_, err := cm.Contact(g1, g2)
 	if err != nil {
 		t.Errorf("Error reported %s", err)
