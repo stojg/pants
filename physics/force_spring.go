@@ -1,7 +1,6 @@
 package physics
 
 import (
-	. "github.com/stojg/pants/vector"
 	"math"
 )
 
@@ -13,8 +12,7 @@ type SpringForce struct {
 
 func (sf *SpringForce) UpdateForce(p *Physics, duration float64) {
 	// calculate the vector of the spring
-	force := &Vec2{}
-	p.getPosition(force)
+	force := p.Position.Clone()
 	force.Sub(sf.other.Position)
 
 	// calculate the magnitude of the force

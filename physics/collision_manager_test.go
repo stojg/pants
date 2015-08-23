@@ -42,7 +42,7 @@ func TestContactPairHit(t *testing.T) {
 	cm := &CollisionManager{}
 	g1 := NewPhysics(0, 0, 0, 0)
 	g2 := NewPhysics(0, 0, 0, 0)
-	_, err := cm.Contact(g1, g2)
+	_, err := cm.Collision(g1, g2)
 	if err != nil {
 		t.Errorf("Error reported %s", err)
 		return

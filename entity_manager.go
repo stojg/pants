@@ -90,6 +90,8 @@ func (em *EntityManager) All() []*EntityUpdate {
 }
 
 func (em *EntityManager) Changed() []*EntityUpdate {
+	// @todo(stig): it is possible that this might be called before the
+	// em.sprite has been fully setup, ie a race condition
 	ids := make([]uint64, len(em.sprites))
 	i := 0
 	for k := range em.sprites {

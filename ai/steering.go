@@ -35,14 +35,17 @@ type Seek struct {
 	target *Physics
 }
 
+// Entity returns the entity that is the steering behaviour is acting on
 func (s *Seek) Entity() *Physics {
 	return s.entity
 }
 
+// Target returns the target for the steering behaviour
 func (s *Seek) Target() *Physics {
 	return s.target
 }
 
+// Get returns the steering output for Seek
 func (s *Seek) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
@@ -58,6 +61,7 @@ type Flee struct {
 	*Seek
 }
 
+// NewFlee returns a new Flee steering behaviour
 func NewFlee(entity, target *Physics) *Flee {
 	return &Flee{
 		Seek: &Seek{
@@ -67,6 +71,7 @@ func NewFlee(entity, target *Physics) *Flee {
 	}
 }
 
+// Get returns the steering output for Flee
 func (s *Flee) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
@@ -102,6 +107,7 @@ type Arrive struct {
 	timeToTarget float64 // How fast we are trying to get to the target, 0.1
 }
 
+// NewArrive returns a new Arrive steering behaviour
 func NewArrive(entity, target *Physics, targetRadius, slowRadius float64) *Arrive {
 	return &Arrive{
 		Seek: &Seek{
@@ -114,6 +120,7 @@ func NewArrive(entity, target *Physics, targetRadius, slowRadius float64) *Arriv
 	}
 }
 
+// Get returns the steering output for Arrive
 func (s *Arrive) Get(dt float64) *SteeringOutput {
 	steering := NewSteeringOutput()
 

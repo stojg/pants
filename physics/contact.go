@@ -20,33 +20,37 @@ func (c *Contact) Resolve(duration float64) {
 // resolveInterpenetration separates two objects that has penetrated
 func (c *Contact) resolveInterpenetration() {
 
+	// These objects are not intersecting
 	if c.penetration <= 0 {
 		return
 	}
 
+	// Calculate the total inverse mass
 	totalInvMass := c.a.invMass
 	if c.b != nil {
 		totalInvMass += c.b.invMass
 	}
-	// Both objects have infinite mass, so no velocity
+
+	// Both objects have infinite mass, so neither can be moved
 	if totalInvMass == 0 {
 		return
 	}
 
-	movePerIMass := c.normal.Clone().Scale(c.penetration / totalInvMass)
-
-	c.a.Position.Add(movePerIMass.Clone().Scale(c.a.invMass))
+	movePerInvMass := c.normal.NewScale(c.penetration / totalInvMass)
+	// Move the objects out of contact depending on their mass
+	c.a.Position.Add(movePerInvMass.NewScale(c.a.invMass))
 	if c.b != nil {
-		c.b.Position.Add(movePerIMass.Clone().Scale(-c.b.invMass))
+		c.b.Position.Add(movePerInvMass.NewScale(-c.b.invMass))
 	}
 }
 
 // resolveVelocity calculates the new velocity that is the result of the collision
 func (collision *Contact) resolveVelocity(duration float64) {
-	// Find the velocity in the direction of the contact normal
-	separatingVelocity := collision.SeparatingVelocity()
 
-	// The objects are already separating, NOP
+	// Find the velocity in the direction of the contact normal
+	separatingVelocity := collision.separatingVelocity()
+
+	// The objects are already separating
 	if separatingVelocity > 0 {
 		return
 	}
@@ -83,17 +87,17 @@ func (collision *Contact) resolveVelocity(duration float64) {
 		return
 	}
 
-	impulsePerIMass := collision.normal.Clone().Scale(deltaVelocity / totalInvMass)
+	impulsePerIMass := collision.normal.NewScale(deltaVelocity / totalInvMass)
 
-	velocityChangeA := impulsePerIMass.Clone().Scale(collision.a.invMass)
+	velocityChangeA := impulsePerIMass.NewScale(collision.a.invMass)
 	collision.a.Velocity.Add(velocityChangeA)
 	if collision.b != nil {
-		velocityChangeB := impulsePerIMass.Clone().Scale(-collision.b.invMass)
+		velocityChangeB := impulsePerIMass.NewScale(-collision.b.invMass)
 		collision.b.Velocity.Add(velocityChangeB)
 	}
 }
 
-func (c *Contact) SeparatingVelocity() float64 {
+func (c *Contact) separatingVelocity() float64 {
 	relativeVel := c.a.Velocity.Clone()
 	if c.b != nil {
 		relativeVel.Sub(c.b.Velocity)

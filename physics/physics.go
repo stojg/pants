@@ -10,54 +10,40 @@ type DebugWriter interface {
 }
 
 type Physics struct {
-	Position        *Vec2
-	prevPosition    *Vec2
-	Velocity        *Vec2
-	maxVelocity     float64
-	forces          *Vec2
-	maxAcceleration float64
-
-	acceleration *Vec2
-
-	Orientation        float64
-	prevOrientation    float64
-	AngularVelocity    float64
-	rotations          float64
-	maxAngularVelocity float64
-
-	forceAccum *Vec2
-	invMass    float64
-
-	damping float64
-
-	collisionGeometry Geometry
+	Position           *Vec2    // current position
+	prevPosition       *Vec2    // previous position
+	Velocity           *Vec2    // current velocity
+	maxVelocity        float64  // max possible velocity
+	Acceleration       *Vec2    // current acceleration
+	maxAcceleration    float64  // max acceleration
+	Orientation        float64  // current orientation in radians
+	prevOrientation    float64  // previous orientation in radians
+	AngularVelocity    float64  // rotational velocity in radians/sec
+	maxAngularVelocity float64  // max angular velocity
+	rotations          float64  // rotational acceleration
+	forces             *Vec2    // accumulated forces acting on this component
+	invMass            float64  // the inverse mass of this object
+	damping            float64  // general damping
+	collisionGeometry  Geometry // the geometry used for collision detection
 }
 
 func NewPhysics(x, y, orientation, mass float64) *Physics {
 
-	var invMass float64
-	if mass > 0 {
-		invMass = 1 / mass
-	}
-
 	p := &Physics{
 		Position:        &Vec2{X: x, Y: y},
 		prevPosition:    &Vec2{X: x, Y: y},
-		Velocity:        &Vec2{0, 0},
+		Velocity:        &Vec2{},
 		maxVelocity:     300,
+		Acceleration:    &Vec2{},
 		maxAcceleration: 100,
-
-		acceleration: &Vec2{0, 0},
-
-		forces: &Vec2{0, 0},
-
 		Orientation:     orientation,
 		prevOrientation: orientation,
-		AngularVelocity: 0,
-		rotations:       0,
+		forces:          &Vec2{},
+		damping:         0.999,
+	}
 
-		invMass: invMass,
-		damping: 0.999,
+	if mass > 0 {
+		p.invMass = 1 / mass
 	}
 
 	p.collisionGeometry = &Circle{
@@ -75,10 +61,6 @@ func (c *Physics) Clone() *Physics {
 	return pc
 }
 
-func (c *Physics) getPosition(a *Vec2) {
-	a.Copy(c.Position)
-}
-
 func (c *Physics) Update(id uint64, w DebugWriter, duration float64) bool {
 
 	//	if c.Velocity.Length() > 1 {
@@ -91,8 +73,9 @@ func (c *Physics) Update(id uint64, w DebugWriter, duration float64) bool {
 
 	c.integrate(id, duration)
 
+	// check if this component has changed position or rotations since last
+	// update
 	updated := false
-	// mark as updated
 	if !c.Position.Equals(c.prevPosition) {
 		c.prevPosition.Copy(c.Position)
 		updated = true
@@ -117,7 +100,7 @@ func (c *Physics) integrate(id uint64, duration float64) {
 	c.Position.Add(c.Velocity.Multiply(duration))
 
 	// Work out the acceleration from the force
-	resultingAcc := c.acceleration.Clone()
+	resultingAcc := c.Acceleration.Clone()
 	resultingAcc.Add(c.forces.Multiply(c.invMass))
 
 	// update linear velocity from the acceleration
@@ -127,7 +110,7 @@ func (c *Physics) integrate(id uint64, duration float64) {
 	c.Velocity = c.Velocity.Multiply(math.Pow(c.damping, duration))
 
 	// look in the direction where you want to go
-	c.Orientation = c.forces.ToOrientation()
+	c.Orientation = c.Velocity.ToOrientation()
 
 	// clear forces
 	c.clearForces()
@@ -146,7 +129,7 @@ func (c *Physics) SetDamping(d float64) {
 }
 
 func (c *Physics) SetAcceleration(a *Vec2) {
-	c.acceleration = a
+	c.Acceleration = a
 }
 
 func (p *Physics) MaxAcceleration() float64 {

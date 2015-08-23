@@ -92,6 +92,13 @@ func (a *Vec2) Normalize() *Vec2 {
 	return a
 }
 
+func (a *Vec2) NewScale(alpha float64) *Vec2 {
+	return &Vec2{
+		X: a.X * alpha,
+		Y: a.Y * alpha,
+	}
+}
+
 func (a *Vec2) Scale(alpha float64) *Vec2 {
 	a.X *= alpha
 	a.Y *= alpha

@@ -10,6 +10,19 @@ const (
 	sendBufferSize = 1024 // How many bytes to keep in the send buffer
 )
 
+// Server is struct used for a normal web server and also setting up and
+// starting a web socket server
+type Server struct {
+	port        string
+	upgrader    websocket.Upgrader
+	broadcast   chan []byte
+	incoming    chan []byte
+	register    chan *connection
+	unregister  chan *connection
+	connections map[*connection]bool
+}
+
+// NewServer returns a new Server
 func NewServer(port string) *Server {
 	return &Server{
 		port:        port,
@@ -21,16 +34,7 @@ func NewServer(port string) *Server {
 	}
 }
 
-type Server struct {
-	port        string
-	upgrader    websocket.Upgrader
-	broadcast   chan []byte
-	incoming    chan []byte
-	register    chan *connection
-	unregister  chan *connection
-	connections map[*connection]bool
-}
-
+// Start sets up and starts a static http server and a websocket server
 func (server *Server) Start() {
 	server.upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024 * 10,
@@ -47,6 +51,7 @@ func (server *Server) Start() {
 	go server.listenAndServe()
 }
 
+// Stop closes all active web socket connections
 func (server *Server) Stop() {
 	for c := range server.connections {
 		if err := c.write(websocket.CloseMessage, []byte{}); err != nil {
@@ -59,6 +64,8 @@ func (server *Server) Stop() {
 	}
 }
 
+// Incoming returns an array of messages that has been recieved since the last
+// time Incoming was called
 func (server *Server) Incoming() [][]byte {
 	messages := make([][]byte, 0, len(server.incoming))
 	for {
@@ -72,6 +79,7 @@ func (server *Server) Incoming() [][]byte {
 	return messages
 }
 
+// Broadcast sends a message to all currently active web socket connections
 func (server *Server) Broadcast(msg []byte) {
 	server.broadcast <- msg
 }
@@ -80,10 +88,6 @@ func (server *Server) listenAndServe() {
 	if err := http.ListenAndServe(":"+server.port, nil); err != nil {
 		log.Fatalf("http.ListenAndServe: %s ", err)
 	}
-}
-
-func (server *Server) send(c *connection, message []byte) {
-	c.send <- message
 }
 
 func (server *Server) hub() {
