@@ -50,8 +50,9 @@ func (collision *Contact) resolveVelocity(duration float64) {
 	// Find the velocity in the direction of the contact normal
 	separatingVelocity := collision.separatingVelocity()
 
-	// The objects are already separating
+	// check if it needs to be resolved
 	if separatingVelocity > 0 {
+		// the contact is either separating or stationary so no impulse is required
 		return
 	}
 
@@ -64,7 +65,7 @@ func (collision *Contact) resolveVelocity(duration float64) {
 		accCausedVelocity.Sub(collision.b.forces)
 	}
 
-	// If we have closing velocity due to acceleration buildup,
+	// If we've gotclosing velocity due to acceleration buildup,
 	// remove it from the new separating velocity
 	accCausedSepVelocity := accCausedVelocity.Dot(collision.normal) * duration
 	if accCausedSepVelocity < 0 {
@@ -77,22 +78,32 @@ func (collision *Contact) resolveVelocity(duration float64) {
 
 	deltaVelocity := newSepVelocity - separatingVelocity
 
+	// We apply the change of velocity to each object in proportion to
+	// their inverse mass (i.e., those with lower inverse mass (higher mass)
+	// get less change in velocity
 	totalInvMass := collision.a.invMass
 	if collision.b != nil {
 		totalInvMass += collision.b.invMass
 	}
 
-	// Both objects have infinite mass, so they can't actually move
+	// If all objects have infinite mass the will not react to any impulses
 	if totalInvMass == 0 {
 		return
 	}
 
-	impulsePerIMass := collision.normal.NewScale(deltaVelocity / totalInvMass)
+	// calculate the total impulse to apply
+	impulse := deltaVelocity / totalInvMass
 
-	velocityChangeA := impulsePerIMass.NewScale(collision.a.invMass)
+	// find the impulse direction by scaling it in the direction of the normal
+	impulseWithDirection := collision.normal.NewScale(impulse)
+
+	// change velocity for a in proportion to its inverse mass
+	velocityChangeA := impulseWithDirection.NewScale(collision.a.invMass)
 	collision.a.Velocity.Add(velocityChangeA)
+
+	// change velocity for b in proportion to its inverse mass
 	if collision.b != nil {
-		velocityChangeB := impulsePerIMass.NewScale(-collision.b.invMass)
+		velocityChangeB := impulseWithDirection.NewScale(-collision.b.invMass)
 		collision.b.Velocity.Add(velocityChangeB)
 	}
 }

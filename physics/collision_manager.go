@@ -80,7 +80,6 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 // ResolveCollision will resolve all collisions found by DetectCollisions
 func (cm *CollisionManager) ResolveCollisions(duration float64) {
-	// todo(stig): implement contact resolution here
 	for _, collision := range cm.collisions {
 		collision.Resolve(duration)
 	}
