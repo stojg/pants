@@ -2,8 +2,6 @@ package network
 
 import (
 	"github.com/gorilla/websocket"
-	//	"github.com/mitchellh/mapstructure"
-	//	"labix.org/v2/mgo/bson"
 	"log"
 	"time"
 )
@@ -17,6 +15,7 @@ const (
 
 // connection is an middleman between the websocket connection and the hub.
 type connection struct {
+	Id     uint64
 	server *Server
 	ws     *websocket.Conn // The websocket connection.
 	send   chan []byte     // Buffered channel of outbound messages.
@@ -74,6 +73,6 @@ func (c *connection) readPump() {
 			log.Printf("error on socket read: %s", err)
 			break
 		}
-		c.server.incoming <- message
+		c.server.incoming <- &Request{ConnectionID: c.Id, Message: message}
 	}
 }

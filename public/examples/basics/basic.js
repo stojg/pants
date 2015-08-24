@@ -11,7 +11,7 @@ var Assets = (function () {
 	}
 })();
 
-var Network = (function() {
+var Network = (function () {
 
 	/**
 	 * the websocket connection
@@ -37,16 +37,18 @@ var Network = (function() {
 
 	function onOpen(evt) {
 		console.log("connection opened");
-		var msg = {
+		sendMsg({
 			"topic": "time_request",
 			"client": window.performance.now()
-		};
-		var serialisedMsg = BSON.serialize(msg, false, true, false);
-		conn.send(serialisedMsg);
+		});
 	}
 
 	function onClose(evt) {
 		console.log("connection closed");
+	}
+
+	function sendMsg(msg) {
+		conn.send(BSON.serialize(msg, false, true, false));
 	}
 
 	return {
@@ -57,7 +59,8 @@ var Network = (function() {
 			conn.onclose = onClose;
 			conn.onmessage = onMessage;
 			conn.onopen = onOpen;
-		}
+		},
+		send: sendMsg
 	};
 
 })();
@@ -205,21 +208,38 @@ var Basic = (function (assets, network) {
 	}
 
 	function mapMessage(msg, spriteContainer) {
+		var width = 50;
+		var tileSize = 20;
+
 		var data = msg.data;
 		stage.removeChildren();
 		console.log("map received");
 		for (var i = 0; i < data.length; i++) {
 			var layer = new PIXI.Container();
 			stage.addChild(layer);
+			stage.interactive = true;
+			stage.on('mousedown', function (event) {
+				var x = Math.floor(event.data.originalEvent.offsetX / tileSize);
+				var y = Math.floor(event.data.originalEvent.offsetY / tileSize);
+				var msg = {
+					"topic": "time_request",
+					"client": window.performance.now()
+				};
+				network.send({
+					topic: 'input',
+					type: 'click',
+					data: [x, y]
+				});
+			});
 			var graphics = new PIXI.Graphics();
 			graphics.lineStyle(1, 0x0089CB, 1);
-			var width = 50;
+
 			var col = 0;
 			var row = 0;
 			for (var j = 0; j < data[i].buffer.length; j++) {
 				if (typeof backgrounds[data[i].buffer[j]] !== 'undefined') {
 					graphics.beginFill(backgrounds[data[i].buffer[j]], 1);
-					graphics.drawRect(col * 20, row * 20, 20, 20);
+					graphics.drawRect(col * tileSize, row * tileSize, tileSize, tileSize);
 				}
 				layer.addChild(graphics);
 				col += 1;

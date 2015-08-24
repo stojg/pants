@@ -10,16 +10,23 @@ const (
 	sendBufferSize = 1024 // How many bytes to keep in the send buffer
 )
 
+type Request struct {
+	Message      []byte
+	ConnectionID uint64
+	DecodedMessage map[string]interface{}
+}
+
 // Server is struct used for a normal web server and also setting up and
 // starting a web socket server
 type Server struct {
-	port        string
-	upgrader    websocket.Upgrader
-	broadcast   chan []byte
-	incoming    chan []byte
-	register    chan *connection
-	unregister  chan *connection
-	connections map[*connection]bool
+	port                string
+	upgrader            websocket.Upgrader
+	broadcast           chan []byte
+	incoming            chan *Request
+	register            chan *connection
+	unregister          chan *connection
+	connections         map[*connection]bool
+	currentConnectionID uint64
 }
 
 // NewServer returns a new Server
@@ -27,7 +34,7 @@ func NewServer(port string) *Server {
 	return &Server{
 		port:        port,
 		broadcast:   make(chan []byte, 256),
-		incoming:    make(chan []byte, 256),
+		incoming:    make(chan *Request, 256),
 		register:    make(chan *connection),
 		unregister:  make(chan *connection),
 		connections: make(map[*connection]bool),
@@ -66,8 +73,8 @@ func (server *Server) Stop() {
 
 // Incoming returns an array of messages that has been recieved since the last
 // time Incoming was called
-func (server *Server) Incoming() [][]byte {
-	messages := make([][]byte, 0, len(server.incoming))
+func (server *Server) Incoming() []*Request {
+	messages := make([]*Request, 0, len(server.incoming))
 	for {
 		select {
 		case msg := <-server.incoming:
@@ -77,6 +84,15 @@ func (server *Server) Incoming() [][]byte {
 		}
 	}
 	return messages
+}
+
+func (server *Server) Send(connId uint64, msg []byte) {
+	for c := range server.connections {
+		if c.Id == connId {
+			c.send <- msg
+			return
+		}
+	}
 }
 
 // Broadcast sends a message to all currently active web socket connections
@@ -94,6 +110,8 @@ func (server *Server) hub() {
 	for {
 		select {
 		case c := <-server.register:
+			c.Id = server.currentConnectionID
+			server.currentConnectionID += 1
 			server.connections[c] = true
 			log.Printf("client %s connected", c.ws.RemoteAddr())
 		case c := <-server.unregister:

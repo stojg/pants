@@ -8,18 +8,18 @@ import (
 	"time"
 )
 
-type Message struct {
+type Response struct {
 	Tick      uint64
 	Topic     string
-	Data      []*EntityUpdate
 	Timestamp float64
+	Data      []*EntityUpdate
 }
 
-type MapMessage struct {
+type MapResponse struct {
 	Tick      uint64
 	Topic     string
-	Data      [][]byte
 	Timestamp float64
+	Data      [][]byte
 }
 
 type TimeRequest struct {
@@ -29,9 +29,9 @@ type TimeRequest struct {
 }
 
 type InputRequest struct {
-	Topic  string
-	Action string
-	Id     uint64
+	Topic string
+	Type  string
+	Data  []int
 }
 
 type NetworkManager struct {
@@ -43,7 +43,7 @@ func (n *NetworkManager) SendState(entities map[uint64]bool, w *World, current t
 	changedSprites := w.entityManager.Changed()
 	ts := float64(current.UnixNano()) / 1000000
 	if len(changedSprites) > 0 {
-		msg := &Message{
+		msg := &Response{
 			Topic:     "update",
 			Data:      changedSprites,
 			Tick:      w.gameTick,
@@ -59,22 +59,20 @@ func (n *NetworkManager) SendState(entities map[uint64]bool, w *World, current t
 	}
 }
 
-func (n *NetworkManager) SendMap(wMap [][]byte) {
+func (n *NetworkManager) SendMap(connId uint64, wMap [][]byte) {
 	ts := float64(time.Now().UnixNano()) / 1000000
 
-	msg := &MapMessage{
+	msg := &MapResponse{
 		Topic:     "map",
 		Data:      wMap,
 		Timestamp: ts,
 	}
-	bson, err := bson.Marshal(msg)
+	data, err := bson.Marshal(msg)
 	if err != nil {
 		log.Printf("error %s", err)
 		return
 	}
-
-	n.server.Broadcast(bson)
-
+	n.server.Send(connId, data)
 }
 
 func (n *NetworkManager) Inputs() {
@@ -87,29 +85,30 @@ func (n *NetworkManager) Inputs() {
 	}
 }
 
-func (n *NetworkManager) handleInput(in []byte) {
+func (n *NetworkManager) handleInput(in *network.Request) {
 	msg := map[string]interface{}{}
-	err := bson.Unmarshal(in, msg)
+	err := bson.Unmarshal(in.Message, msg)
 	if err != nil {
 		log.Printf("error on bson.Umarshal: %s", err)
 		return
 	}
+	in.DecodedMessage = msg
 
 	switch msg["topic"] {
 	case "time_request":
-		n.handleTimeCheck(msg)
-		n.SendMap(n.world.worldMap.Compress())
+		n.handleTimeCheck(in)
+		n.SendMap(in.ConnectionID, n.world.worldMap.Compress())
 	case "input":
-		n.handleInputRequest(msg)
+		n.handleInputRequest(in)
 	default:
 		log.Printf("unhandled message topic '%s'", msg["topic"])
 	}
 }
 
-func (n *NetworkManager) handleTimeCheck(msg map[string]interface{}) {
+func (n *NetworkManager) handleTimeCheck(req *network.Request) {
 	log.Printf("time_request received")
 	var request TimeRequest
-	if err := mapstructure.Decode(msg, &request); err != nil {
+	if err := mapstructure.Decode(req.DecodedMessage, &request); err != nil {
 		log.Printf("error: could not decode incoming message: %s", err)
 	}
 	response := &TimeRequest{
@@ -118,16 +117,14 @@ func (n *NetworkManager) handleTimeCheck(msg map[string]interface{}) {
 		Client: request.Client,
 	}
 	bson, _ := bson.Marshal(response)
-	n.server.Broadcast(bson)
+	n.server.Send(req.ConnectionID, bson)
 	log.Printf("time_request sent")
 }
 
-func (n *NetworkManager) handleInputRequest(msg map[string]interface{}) {
+func (n *NetworkManager) handleInputRequest(msg *network.Request) {
 	var input InputRequest
-	if err := mapstructure.Decode(msg, &input); err != nil {
+	if err := mapstructure.Decode(msg.DecodedMessage, &input); err != nil {
 		log.Printf("error: could not decode incoming message: %s", err)
 	}
-
-	//	input.Id
-
+	log.Printf("recieved input: %#V", input)
 }

@@ -30,7 +30,7 @@ func (d *AIDrunkard) Update(s *Entity, w *World, t float64) {
 
 func (d *AIDrunkard) handleInputs(s *Entity) {
 	for _, input := range s.inputs {
-		switch input.Action {
+		switch input.Type {
 		case "mouseOver":
 			d.state.SetState(STATE_FLEE)
 			//		case "mouseOut":
