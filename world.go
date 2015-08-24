@@ -4,6 +4,7 @@ import (
 	"github.com/stojg/pants/network"
 	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/vector"
+	. "github.com/stojg/pants/worldmap"
 	"log"
 	"math/rand"
 	"time"
@@ -13,15 +14,35 @@ const NetFPS = 50 * time.Millisecond
 
 func NewWorld(list *EntityManager, s *network.Server) *World {
 	currentTime := time.Now()
-	return &World{
-		netTicked:      currentTime,
-		gameTicked:     currentTime,
-		rand:           rand.New(rand.NewSource(time.Now().UnixNano())),
-		entityManager:  list,
-		networkManager: &NetworkManager{server: s},
-		director:       &Director{},
-		server:         s,
+
+	w := &World{
+		netTicked:     currentTime,
+		gameTicked:    currentTime,
+		rand:          rand.New(rand.NewSource(time.Now().UnixNano())),
+		entityManager: list,
+		director:      &Director{},
+		server:        s,
 	}
+
+	w.networkManager = &NetworkManager{server: s, world: w}
+
+	wMap := NewWorldMap(200, 200)
+
+	for x := 0; x < 200; x++ {
+		for y := 0; y < 200; y++ {
+			tile := byte(0)
+			v := w.rand.Float32()
+			if v < 0.33 {
+				tile = 1
+			} else if v < 0.66 {
+				tile = 2
+			}
+			wMap.Base().Place(x, y, tile)
+		}
+	}
+	w.worldMap = wMap
+
+	return w
 }
 
 type World struct {
@@ -35,6 +56,7 @@ type World struct {
 	director       *Director
 	debug          []*Line
 	server         *network.Server
+	worldMap       *WorldMap
 }
 
 type EntityUpdate struct {
@@ -77,7 +99,6 @@ func (w *World) networkTick() {
 
 		w.entityManager.updated = make(map[uint64]bool, 0)
 		w.debug = make([]*Line, 0)
-
 	}
 }
 

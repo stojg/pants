@@ -15,6 +15,13 @@ type Message struct {
 	Timestamp float64
 }
 
+type MapMessage struct {
+	Tick      uint64
+	Topic     string
+	Data      [][]byte
+	Timestamp float64
+}
+
 type TimeRequest struct {
 	Topic  string
 	Server float64
@@ -29,6 +36,7 @@ type InputRequest struct {
 
 type NetworkManager struct {
 	server *network.Server
+	world  *World
 }
 
 func (n *NetworkManager) SendState(entities map[uint64]bool, w *World, current time.Time) {
@@ -46,8 +54,27 @@ func (n *NetworkManager) SendState(entities map[uint64]bool, w *World, current t
 			log.Printf("error %s", err)
 			return
 		}
+
 		n.server.Broadcast(bson)
 	}
+}
+
+func (n *NetworkManager) SendMap(wMap [][]byte) {
+	ts := float64(time.Now().UnixNano()) / 1000000
+
+	msg := &MapMessage{
+		Topic:     "map",
+		Data:      wMap,
+		Timestamp: ts,
+	}
+	bson, err := bson.Marshal(msg)
+	if err != nil {
+		log.Printf("error %s", err)
+		return
+	}
+
+	n.server.Broadcast(bson)
+
 }
 
 func (n *NetworkManager) Inputs() {
@@ -71,6 +98,7 @@ func (n *NetworkManager) handleInput(in []byte) {
 	switch msg["topic"] {
 	case "time_request":
 		n.handleTimeCheck(msg)
+		n.SendMap(n.world.worldMap.Compress())
 	case "input":
 		n.handleInputRequest(msg)
 	default:
