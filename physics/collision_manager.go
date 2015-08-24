@@ -3,6 +3,7 @@ package physics
 import (
 	"fmt"
 	"log"
+	"math"
 )
 
 // CollisionManager keeps tracks and does collision testing between Physics
@@ -19,7 +20,7 @@ func (cm *CollisionManager) Add(p *Physics) {
 func (cm *CollisionManager) Remove(p *Physics) {
 	for i, obj := range cm.physics {
 		if obj == p {
-			cm.physics = append(cm.physics[:i], cm.physics[i+1:]...)
+			cm.physics = append(cm.physics[:i], cm.physics[i + 1:]...)
 		}
 	}
 }
@@ -80,7 +81,32 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 // ResolveCollision will resolve all collisions found by DetectCollisions
 func (cm *CollisionManager) ResolveCollisions(duration float64) {
-	for _, collision := range cm.collisions {
-		collision.Resolve(duration)
+
+	numContacts := len(cm.collisions)
+	iterationsUsed := 0
+	iterations := numContacts * 2
+
+	for iterationsUsed < iterations {
+		// find the contact with the largest closing velocity
+		max := math.MaxFloat64
+		maxIndex := numContacts
+		for i, collision := range cm.collisions {
+			sepVel := collision.separatingVelocity()
+			// we found a collision with the lowest separation velocity that is
+			// intersection
+			if sepVel < max && (sepVel < 0 || collision.penetration > 0) {
+				max = sepVel
+				maxIndex = i
+			}
+		}
+
+		// do we have anything worth resolving
+		if maxIndex == numContacts {
+			break
+		}
+
+		// resolve the collision with the lowest separating velocity
+		cm.collisions[maxIndex].Resolve(duration)
+		iterationsUsed += 1
 	}
 }

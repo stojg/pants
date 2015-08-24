@@ -65,7 +65,7 @@ func (collision *Contact) resolveVelocity(duration float64) {
 		accCausedVelocity.Sub(collision.b.forces)
 	}
 
-	// If we've gotclosing velocity due to acceleration buildup,
+	// If we've got closing velocity due to acceleration buildup,
 	// remove it from the new separating velocity
 	accCausedSepVelocity := accCausedVelocity.Dot(collision.normal) * duration
 	if accCausedSepVelocity < 0 {
