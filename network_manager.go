@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/mitchellh/mapstructure"
+	"github.com/stojg/pants/grid"
 	"github.com/stojg/pants/network"
 	"labix.org/v2/mgo/bson"
 	"log"
@@ -19,7 +20,7 @@ type MapResponse struct {
 	Tick      uint64
 	Topic     string
 	Timestamp float64
-	Data      [][]byte
+	Data      []*grid.Node
 }
 
 type TimeRequest struct {
@@ -59,7 +60,7 @@ func (n *NetworkManager) SendState(entities map[uint64]bool, w *World, current t
 	}
 }
 
-func (n *NetworkManager) SendMap(connId uint64, wMap [][]byte) {
+func (n *NetworkManager) SendMap(connId uint64, wMap []*grid.Node) {
 	ts := float64(time.Now().UnixNano()) / 1000000
 
 	msg := &MapResponse{
@@ -73,6 +74,22 @@ func (n *NetworkManager) SendMap(connId uint64, wMap [][]byte) {
 		return
 	}
 	n.server.Send(connId, data)
+}
+
+func (n *NetworkManager) BroadcastMap(wMap []*grid.Node) {
+	ts := float64(time.Now().UnixNano()) / 1000000
+
+	msg := &MapResponse{
+		Topic:     "map",
+		Data:      wMap,
+		Timestamp: ts,
+	}
+	data, err := bson.Marshal(msg)
+	if err != nil {
+		log.Printf("error %s", err)
+		return
+	}
+	n.server.Broadcast(data)
 }
 
 func (n *NetworkManager) Inputs() {

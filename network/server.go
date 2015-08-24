@@ -11,8 +11,8 @@ const (
 )
 
 type Request struct {
-	Message      []byte
-	ConnectionID uint64
+	Message        []byte
+	ConnectionID   uint64
 	DecodedMessage map[string]interface{}
 }
 

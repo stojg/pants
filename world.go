@@ -1,11 +1,12 @@
 package main
 
 import (
+	. "github.com/stojg/pants/grid"
 	"github.com/stojg/pants/network"
 	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/vector"
-	. "github.com/stojg/pants/worldmap"
 	"log"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -26,18 +27,12 @@ func NewWorld(list *EntityManager, s *network.Server) *World {
 
 	w.networkManager = &NetworkManager{server: s, world: w}
 
-	wMap := NewWorldMap(200, 200)
+	wMap := NewGrid(60, 60)
 
-	for x := 0; x < 200; x++ {
-		for y := 0; y < 200; y++ {
-			tile := byte(0)
-			v := w.rand.Float32()
-			if v < 0.33 {
-				tile = 1
-			} else if v < 0.66 {
-				tile = 2
-			}
-			wMap.Base().Place(x, y, tile)
+	for x := 0; x < wMap.Width; x++ {
+		for y := 0; y < wMap.Height; y++ {
+			v := math.Floor(w.rand.Float64() * 3)
+			wMap.Place(x, y, byte(v))
 		}
 	}
 	w.worldMap = wMap
@@ -56,7 +51,7 @@ type World struct {
 	director       *Director
 	debug          []*Line
 	server         *network.Server
-	worldMap       *WorldMap
+	worldMap       *Grid
 }
 
 type EntityUpdate struct {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/stojg/pants/grid"
 	. "github.com/stojg/pants/vector"
 )
 
@@ -19,6 +20,7 @@ type Entity struct {
 	Dead   bool
 	inputs []*InputRequest
 	Type   string
+	Tile   *grid.Node
 }
 
 func (s *Entity) Kill() {

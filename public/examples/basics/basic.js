@@ -1,10 +1,12 @@
 var Assets = (function () {
 
 	var backgrounds = [];
-	backgrounds[0] = 0x1099bb;
-	backgrounds[1] = 0x20A9Cb;
-	backgrounds[2] = 0x30B9DB;
-	backgrounds[3] = 0x30DBB9;
+	backgrounds[0] = 0x0089ab;
+	backgrounds[1] = 0x1099bb;
+	backgrounds[2] = 0x20A9Cb;
+	backgrounds[3] = 0x30B9DB;
+	backgrounds[4] = 0x40C9EB;
+	backgrounds[5] = 0x30DBB9;
 
 	return {
 		backgrounds: backgrounds
@@ -21,6 +23,8 @@ var Network = (function () {
 	var BSON = new bson().BSON;
 
 	var messageHandler;
+
+	var tileSize = 20;
 
 	function onMessage(evt) {
 		try {
@@ -89,6 +93,22 @@ var Basic = (function (assets, network) {
 
 	// create the root of the scene graph
 	var stage = new PIXI.Container();
+
+
+	var backgroundStage = new PIXI.Container();
+	backgroundStage.interactive = true;
+	backgroundStage.on('mousedown', function (event) {
+		var x = Math.floor(event.data.originalEvent.offsetX / tileSize);
+		var y = Math.floor(event.data.originalEvent.offsetY / tileSize);
+		network.send({
+			topic: 'input',
+			type: 'click',
+			data: [x, y]
+		});
+		console.log('input');
+	});
+
+	stage.addChild(backgroundStage);
 
 	var spriteContainer = new PIXI.ParticleContainer(10000, {
 		scale: true,
@@ -207,49 +227,22 @@ var Basic = (function (assets, network) {
 		return sprite;
 	}
 
-	function mapMessage(msg, spriteContainer) {
-		var width = 50;
+	function mapMessage(msg) {
 		var tileSize = 20;
-
-		var data = msg.data;
-		stage.removeChildren();
-		console.log("map received");
-		for (var i = 0; i < data.length; i++) {
-			var layer = new PIXI.Container();
-			stage.addChild(layer);
-			stage.interactive = true;
-			stage.on('mousedown', function (event) {
-				var x = Math.floor(event.data.originalEvent.offsetX / tileSize);
-				var y = Math.floor(event.data.originalEvent.offsetY / tileSize);
-				var msg = {
-					"topic": "time_request",
-					"client": window.performance.now()
-				};
-				network.send({
-					topic: 'input',
-					type: 'click',
-					data: [x, y]
-				});
-			});
-			var graphics = new PIXI.Graphics();
-			graphics.lineStyle(1, 0x0089CB, 1);
-
-			var col = 0;
-			var row = 0;
-			for (var j = 0; j < data[i].buffer.length; j++) {
-				if (typeof backgrounds[data[i].buffer[j]] !== 'undefined') {
-					graphics.beginFill(backgrounds[data[i].buffer[j]], 1);
-					graphics.drawRect(col * tileSize, row * tileSize, tileSize, tileSize);
-				}
-				layer.addChild(graphics);
-				col += 1;
-				if (col > width) {
-					row += 1;
-					col = 0;
-				}
+		var graphics = new PIXI.Graphics();
+		graphics.lineStyle(1, 0x0069AB, 1);
+		console.log("Map received");
+		var layerContainer = new PIXI.Container();
+		for (var key in msg.data) {
+			var tile = msg.data[key];
+			if (typeof backgrounds[tile.tiletype] !== 'undefined') {
+				graphics.beginFill(backgrounds[tile.tiletype], 1);
+				graphics.drawRect(tile.x * tileSize, tile.y * tileSize, tileSize, tileSize);
 			}
 		}
-		stage.addChild(spriteContainer);
+		layerContainer.addChild(graphics);
+		backgroundStage.removeChildren();
+		backgroundStage.addChild(layerContainer);
 	}
 
 	function timeMessage(msg) {
@@ -314,7 +307,7 @@ var Basic = (function (assets, network) {
 				timeMessage(msg);
 				break;
 			case 'map':
-				mapMessage(msg, spriteContainer);
+				mapMessage(msg);
 				break;
 			case 'update':
 				entityUpdates(spriteContainer, msg);

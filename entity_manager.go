@@ -71,11 +71,12 @@ func (em *EntityManager) Update(w *World, duration float64) {
 		}
 	}
 
-	tries := 0
-	if em.collisionManager.DetectCollisions() || tries > 3 {
-		tries += 1
-		em.collisionManager.ResolveCollisions(duration)
+	for _, sprite := range em.sprites {
+		sprite.Tile = w.worldMap.TileFromWorld(em.physics[sprite.Id].Position)
 	}
+
+	em.collisionManager.DetectCollisions()
+	em.collisionManager.ResolveCollisions(duration)
 }
 
 func (em *EntityManager) All() []*EntityUpdate {
