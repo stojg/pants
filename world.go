@@ -100,14 +100,15 @@ func (w *World) networkTick() {
 func (w *World) worldTick() {
 	var gameTime float64
 	var accumulator float64
+	var frameTime float64
 	dt := 0.01
-	currentTime := time.Now()
+	currentTime := time.Now().UnixNano()
 	for {
-		newTime := time.Now()
-		frameTime := newTime.Sub(currentTime).Seconds()
+		newTime := time.Now().UnixNano()
+		frameTime = (float64(newTime - currentTime)/1e9)
 		currentTime = newTime
 
-		if frameTime > 0.016 {
+		if frameTime > 0.017 {
 			log.Printf("world lag: %d ms", int((frameTime-0.016)*1000))
 		}
 
