@@ -15,7 +15,6 @@ func NewEntityManager() *EntityManager {
 		updated:          make(map[uint64]bool),
 		forceRegistry:    &PhysicsForceRegistry{},
 		collisionManager: &CollisionManager{},
-		quadTree:         tree.NewQuadTree(0, tree.NewRectangle(500, 500, 500, 500)),
 	}
 }
 
@@ -28,7 +27,6 @@ type EntityManager struct {
 	updated          map[uint64]bool
 	forceRegistry    *PhysicsForceRegistry
 	collisionManager *CollisionManager
-	quadTree         *tree.QuadTree
 }
 
 var gravity *StaticForce
