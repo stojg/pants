@@ -17,15 +17,9 @@ type Line struct {
 type Entity struct {
 	Id     uint64 `bson:",minsize"`
 	Image  string `bson:",minsize,omitempty"`
-	Dead   bool
 	inputs []*InputRequest
 	Type   string
 	Tile   *grid.Node
-}
-
-func (s *Entity) Kill() {
-	s.Dead = true
-	entityManager.updated[s.Id] = true
 }
 
 func (s *Entity) AddInput(i *InputRequest) {

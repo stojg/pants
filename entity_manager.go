@@ -38,7 +38,6 @@ func init() {
 
 func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	entity := &Entity{}
-	entity.Dead = false
 	entity.Type = "sprite"
 	entity.Image = image
 	entity.inputs = make([]*InputRequest, 0)
@@ -97,7 +96,6 @@ func (em *EntityManager) entityUpdates(entityIds []uint64) []*EntityUpdate {
 			Y:           em.physics[id].Position.Y,
 			Orientation: em.physics[id].Orientation,
 			Type:        em.entities[id].Type,
-			Dead:        em.entities[id].Dead,
 			Data: map[string]string{
 				"Image": em.entities[id].Image,
 			},
