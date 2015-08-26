@@ -8,7 +8,7 @@ import (
 
 func NewEntityManager() *EntityManager {
 	return &EntityManager{
-		sprites:          make(map[uint64]*Entity),
+		entities:         make(map[uint64]*Entity),
 		ais:              make(map[uint64]AI),
 		physics:          make(map[uint64]*Physics),
 		boundingBoxes:    make(map[uint64]*tree.Rectangle),
@@ -21,7 +21,7 @@ func NewEntityManager() *EntityManager {
 
 type EntityManager struct {
 	lastEntityID     uint64
-	sprites          map[uint64]*Entity
+	entities         map[uint64]*Entity
 	ais              map[uint64]AI
 	physics          map[uint64]*Physics
 	boundingBoxes    map[uint64]*tree.Rectangle
@@ -39,63 +39,51 @@ func init() {
 }
 
 func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
-	sprite := &Entity{}
-	sprite.Dead = false
-	sprite.Type = "sprite"
-	sprite.Image = image
-	sprite.inputs = make([]*InputRequest, 0)
+	entity := &Entity{}
+	entity.Dead = false
+	entity.Type = "sprite"
+	entity.Image = image
+	entity.inputs = make([]*InputRequest, 0)
 	em.lastEntityID++
-	sprite.Id = em.lastEntityID
-	em.sprites[sprite.Id] = sprite
-	em.ais[sprite.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
-	em.physics[sprite.Id] = NewPhysics(x, y, 3.14*2, 1)
-	em.physics[sprite.Id].SetDamping(0.99)
-	em.forceRegistry.Add(em.physics[sprite.Id], gravity)
-	em.updated[sprite.Id] = true
-	em.collisionManager.Add(em.physics[sprite.Id])
-	return sprite.Id
+	entity.Id = em.lastEntityID
+	em.entities[entity.Id] = entity
+	em.ais[entity.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
+	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, 1)
+	em.physics[entity.Id].SetDamping(0.99)
+	em.forceRegistry.Add(em.physics[entity.Id], gravity)
+	em.updated[entity.Id] = true
+	em.collisionManager.Add(em.physics[entity.Id])
+	return entity.Id
 }
 
 func (em *EntityManager) Update(w *World, duration float64) {
 
 	em.forceRegistry.Update(duration)
 
-	for _, sprite := range em.sprites {
-		em.ais[sprite.Id].Update(sprite, w, duration)
+	for id, ai := range em.ais {
+		ai.Update(id, w, duration)
 	}
 
-	for _, sprite := range em.sprites {
-		moved := em.physics[sprite.Id].Update(sprite.Id, w, duration)
+	for id, p := range em.physics {
+		moved := p.Update(id, w, duration)
 		if moved {
-			em.updated[sprite.Id] = true
+			em.updated[id] = true
 		}
 	}
 
-	for _, sprite := range em.sprites {
-		sprite.Tile = w.worldMap.TileFromWorld(em.physics[sprite.Id].Position)
-	}
+	//	for _, sprite := range em.sprites {
+	//		sprite.Tile = w.worldMap.TileFromWorld(em.physics[sprite.Id].Position)
+	//	}
 
 	em.collisionManager.DetectCollisions()
 	em.collisionManager.ResolveCollisions(duration)
 }
 
-func (em *EntityManager) All() []*EntityUpdate {
-	ids := make([]uint64, len(em.sprites))
-	i := 0
-	for k := range em.sprites {
-		ids[i] = k
-		i++
-	}
-
-	return em.entityUpdates(ids)
-}
-
 func (em *EntityManager) Changed() []*EntityUpdate {
-	// @todo(stig): it is possible that this might be called before the
-	// em.sprite has been fully setup, ie a race condition
-	ids := make([]uint64, len(em.sprites))
+	// @todo(stig): it is possible that this might be called before the em.sprite has been fully setup, ie a race condition
+	ids := make([]uint64, len(em.entities))
 	i := 0
-	for k := range em.sprites {
+	for k := range em.entities {
 		ids[i] = k
 		i++
 	}
@@ -110,10 +98,10 @@ func (em *EntityManager) entityUpdates(entityIds []uint64) []*EntityUpdate {
 			X:           em.physics[id].Position.X,
 			Y:           em.physics[id].Position.Y,
 			Orientation: em.physics[id].Orientation,
-			Type:        em.sprites[id].Type,
-			Dead:        em.sprites[id].Dead,
+			Type:        em.entities[id].Type,
+			Dead:        em.entities[id].Dead,
 			Data: map[string]string{
-				"Image": em.sprites[id].Image,
+				"Image": em.entities[id].Image,
 			},
 		})
 	}

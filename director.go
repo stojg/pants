@@ -17,7 +17,7 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 	//		w.networkManager.BroadcastMap(w.worldMap.Compress())
 	//	}
 
-	if len(entityManager.sprites) >= 25 {
+	if len(entityManager.entities) >= 100 {
 		return
 	}
 	director.lastAction = gameTime

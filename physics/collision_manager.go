@@ -84,7 +84,7 @@ func (cm *CollisionManager) ResolveCollisions(duration float64) {
 
 	numContacts := len(cm.collisions)
 	iterationsUsed := 0
-	iterations := numContacts * 2
+	iterations := numContacts * 1
 
 	for iterationsUsed < iterations {
 		// find the contact with the largest closing velocity

@@ -15,7 +15,7 @@ const (
 )
 
 type AI interface {
-	Update(s *Entity, w *World, t float64)
+	Update(id uint64, w *World, t float64)
 }
 
 type AIDrunkard struct {
@@ -23,9 +23,9 @@ type AIDrunkard struct {
 	steering Steering
 }
 
-func (d *AIDrunkard) Update(s *Entity, w *World, t float64) {
-	d.handleInputs(s)
-	d.handleState(s, w, t)
+func (d *AIDrunkard) Update(id uint64, w *World, t float64) {
+//	d.handleInputs(s)
+	d.handleState(id, w, t)
 }
 
 func (d *AIDrunkard) handleInputs(s *Entity) {
@@ -42,23 +42,23 @@ func (d *AIDrunkard) handleInputs(s *Entity) {
 	s.inputs = nil
 }
 
-func (d *AIDrunkard) handleState(s *Entity, w *World, t float64) {
+func (d *AIDrunkard) handleState(id uint64, w *World, t float64) {
 	var o *SteeringOutput
 	switch d.state.State() {
 	case STATE_IDLE:
-		o = d.idle(w, s, t)
+		o = d.idle(w, id, t)
 	case STATE_FLEE:
-		o = d.flee(w, s, t)
+		o = d.flee(w, id, t)
 	case STATE_HUNT:
-		o = d.hunt(w, s, t)
+		o = d.hunt(w, id, t)
 	}
 	if o != nil {
-		w.Physic(s.Id).AddForce(o.Linear.Scale(w.Physic(s.Id).Mass()))
-		w.Physic(s.Id).SetRotations(o.Angular)
+		w.Physic(id).AddForce(o.Linear.Scale(w.Physic(id).Mass()))
+		w.Physic(id).SetRotations(o.Angular)
 	}
 }
 
-func (d *AIDrunkard) flee(w *World, s *Entity, duration float64) *SteeringOutput {
+func (d *AIDrunkard) flee(w *World, id uint64, duration float64) *SteeringOutput {
 	if d.state.Duration() > 1*time.Second {
 		d.steering = nil
 		d.state.SetState(STATE_IDLE)
@@ -66,31 +66,32 @@ func (d *AIDrunkard) flee(w *World, s *Entity, duration float64) *SteeringOutput
 	}
 
 	if _, ok := d.steering.(*Flee); !ok {
-		d.steering = NewFlee(w.Physic(s.Id), NewPhysics(w.RandF64(1000), w.RandF64(1000), 0, 0))
+		d.steering = NewFlee(w.Physic(id), NewPhysics(w.RandF64(1000), w.RandF64(1000), 0, 0))
 	}
 	return d.steering.Get(duration)
 }
 
-func (d *AIDrunkard) idle(w *World, s *Entity, duration float64) *SteeringOutput {
+func (d *AIDrunkard) idle(w *World, id uint64, duration float64) *SteeringOutput {
 	if d.state.Duration() > 3*time.Second {
 		d.steering = nil
 		d.state.SetState(STATE_HUNT)
 		return nil
 	}
+	return nil
 	if _, ok := d.steering.(*Arrive); !ok {
-		d.steering = NewArrive(w.Physic(s.Id), w.Physic(s.Id).Clone(), 1, 500)
+		d.steering = NewArrive(w.Physic(id), w.Physic(id).Clone(), 1, 500)
 	}
 	return d.steering.Get(duration)
 }
 
-func (d *AIDrunkard) hunt(w *World, s *Entity, duration float64) *SteeringOutput {
+func (d *AIDrunkard) hunt(w *World, id uint64, duration float64) *SteeringOutput {
 	if _, ok := d.steering.(*Arrive); !ok {
-		d.steering = NewArrive(w.Physic(s.Id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0), 1, 500)
+		d.steering = NewArrive(w.Physic(id), NewPhysics(w.RandF64(800), w.RandF64(600), 0, 0), 10, 500)
 	}
 
-	direction := d.steering.Target().Position.Clone().Sub(w.Physic(s.Id).Position)
+	direction := d.steering.Target().Position.Clone().Sub(w.Physic(id).Position)
 	length := direction.Length()
-	if length < 2 {
+	if length <= 10 {
 		d.steering = nil
 		d.state.SetState(STATE_IDLE)
 		return nil

@@ -67,6 +67,7 @@ func (server *Server) Stop() {
 			log.Printf("client %s disconnected", c.ws.RemoteAddr())
 		}
 		delete(server.connections, c)
+		// @todo(stig): check that the channel isn't closed before closing
 		close(c.send)
 	}
 }
