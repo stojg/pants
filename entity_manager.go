@@ -37,18 +37,23 @@ func init() {
 }
 
 func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
-	entity := &Entity{}
-	entity.Type = "sprite"
-	entity.Image = image
-	entity.inputs = make([]*InputRequest, 0)
-	em.lastEntityID++
-	entity.Id = em.lastEntityID
+
+	em.lastEntityID += 1;
+	entity := &Entity{
+		Id: em.lastEntityID,
+		Type: "sprite",
+		Image: image,
+		inputs: make([]*InputRequest, 0),
+	}
+
 	em.entities[entity.Id] = entity
 	em.ais[entity.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
 	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, 1)
 	em.physics[entity.Id].SetDamping(0.99)
-	em.forceRegistry.Add(em.physics[entity.Id], gravity)
+
 	em.updated[entity.Id] = true
+
+	em.forceRegistry.Add(em.physics[entity.Id], gravity)
 	em.collisionManager.Add(em.physics[entity.Id])
 	return entity.Id
 }
