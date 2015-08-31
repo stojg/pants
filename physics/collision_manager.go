@@ -65,21 +65,25 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 	for _, p := range cm.physics {
 
+		// pre-calculate these values for performance reasonss
 		entityMinX := p.Position.X - entityWidth/2.0
 		entityMaxX := p.Position.X + entityWidth/2.0
 		entityMinY := p.Position.Y - entityHeight/2.0
 		entityMaxY := p.Position.Y + entityHeight/2.0
 
+		// entities outside of the grid should not be checked
 		if entityMinX < 0 || entityMaxX > width || entityMinY < 0 || entityMaxY > height {
 			continue
 		}
 
 		// find extremes of cells that entity overlaps
 		// subtract min to shift grid to avoid negative numbers
-		entityMinCellX := int((entityMinX - 0) / cellSize)
-		entityMaxCellX := int((entityMaxX - 0) / cellSize)
-		entityMinCellY := int((entityMinY - 0) / cellSize)
-		entityMaxCellY := int((entityMaxY - 0) / cellSize)
+		gridMinSizeX := 0.0
+		gridMinSizeY := 0.0
+		entityMinCellX := int((entityMinX - gridMinSizeX) / cellSize)
+		entityMaxCellX := int((entityMaxX - gridMinSizeX) / cellSize)
+		entityMinCellY := int((entityMinY - gridMinSizeY) / cellSize)
+		entityMaxCellY := int((entityMaxY - gridMinSizeY) / cellSize)
 
 		// insert entity into each cell it overlaps
 		// loop to make sure that all cells between extremes are found
@@ -101,7 +105,7 @@ func (cm *CollisionManager) DetectCollisions() bool {
 			continue
 		}
 
-		// iterate over the enteties in the cell
+		// iterate over the entities in the cell
 		for i := 0; i < len(cell); i++ {
 			a := cell[i]
 			// compare a with all the other entities 'after' it in the cell
