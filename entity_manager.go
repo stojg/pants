@@ -38,11 +38,11 @@ func init() {
 
 func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
 
-	em.lastEntityID += 1;
+	em.lastEntityID += 1
 	entity := &Entity{
-		Id: em.lastEntityID,
-		Type: "sprite",
-		Image: image,
+		Id:     em.lastEntityID,
+		Type:   "sprite",
+		Image:  image,
 		inputs: make([]*InputRequest, 0),
 	}
 

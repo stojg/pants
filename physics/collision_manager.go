@@ -22,7 +22,7 @@ func (cm *CollisionManager) Add(p *Physics) {
 func (cm *CollisionManager) Remove(p *Physics) {
 	for i, obj := range cm.physics {
 		if obj == p {
-			cm.physics = append(cm.physics[:i], cm.physics[i + 1:]...)
+			cm.physics = append(cm.physics[:i], cm.physics[i+1:]...)
 		}
 	}
 }
@@ -71,21 +71,21 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 	for _, p := range cm.physics {
 		// if the entity is outside the grid ignore it
-		if p.Position.X - entityWidth / 2.0 < 0 || p.Position.X + entityWidth / 2.0 > width || p.Position.Y - entityHeight / 2.0 < 0 || p.Position.Y + entityHeight / 2.0 > height {
+		if p.Position.X-entityWidth/2.0 < 0 || p.Position.X+entityWidth/2.0 > width || p.Position.Y-entityHeight/2.0 < 0 || p.Position.Y+entityHeight/2.0 > height {
 			continue
 		}
 		// find extremes of cells that entity overlaps
 		// subtract min to shift grid to avoid negative numbers
-		entityMinX := math.Floor(((p.Position.X - entityWidth / 2.0) - 0) / cellSize)
-		entityMaxX := math.Floor(((p.Position.X + entityWidth / 2.0) - 0) / cellSize)
-		entityMinY := math.Floor(((p.Position.Y - entityHeight / 2.0) - 0) / cellSize)
-		entityMaxY := math.Floor(((p.Position.Y + entityHeight / 2.0) - 0) / cellSize)
+		entityMinX := math.Floor(((p.Position.X - entityWidth/2.0) - 0) / cellSize)
+		entityMaxX := math.Floor(((p.Position.X + entityWidth/2.0) - 0) / cellSize)
+		entityMinY := math.Floor(((p.Position.Y - entityHeight/2.0) - 0) / cellSize)
+		entityMaxY := math.Floor(((p.Position.Y + entityHeight/2.0) - 0) / cellSize)
 
 		// insert entity into each cell it overlaps
 		// we're looping to make sure that all cells between extremes are found
 		for cX := entityMinX; cX <= entityMaxX; cX++ {
 			for cY := entityMinY; cY <= entityMaxY; cY++ {
-				index := int(cY) * cols + int(cX)
+				index := int(cY)*cols + int(cX)
 				grid[index] = append(grid[index], p)
 			}
 		}

@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/stojg/pants/network"
-	"testing"
 	"math/rand"
+	"testing"
 )
 
 func TestAddSprite(t *testing.T) {

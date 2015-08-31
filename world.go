@@ -105,7 +105,7 @@ func (w *World) worldTick() {
 	currentTime := time.Now().UnixNano()
 	for {
 		newTime := time.Now().UnixNano()
-		frameTime = (float64(newTime - currentTime)/1e9)
+		frameTime = (float64(newTime-currentTime) / 1e9)
 		currentTime = newTime
 
 		if frameTime > 0.017 {
