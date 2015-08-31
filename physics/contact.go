@@ -42,6 +42,9 @@ func (c *Contact) resolveInterpenetration() {
 	if c.b != nil {
 		c.b.Position.Add(movePerInvMass.NewScale(-c.b.invMass))
 	}
+
+	// set the penetration to zero
+	c.penetration = 0
 }
 
 // resolveVelocity calculates the new velocity that is the result of the collision

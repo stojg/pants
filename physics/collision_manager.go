@@ -40,7 +40,7 @@ func (cm *CollisionManager) GenerateContacts(a, b *Physics) (*Contact, error) {
 			return CircleVsCircle(a.collisionGeometry.(*Circle), b.collisionGeometry.(*Circle)), nil
 		}
 	}
-	return nil, fmt.Errorf("No Collision check could be done between between %s and %s", a.collisionGeometry, b.collisionGeometry)
+	return nil, fmt.Errorf("No Collision test could be done between between %T and %T", a.collisionGeometry, b.collisionGeometry)
 }
 
 // DetectCollisions checks all managed Physics and checks for collisions
@@ -49,7 +49,6 @@ func (cm *CollisionManager) GenerateContacts(a, b *Physics) (*Contact, error) {
 func (cm *CollisionManager) DetectCollisions() bool {
 
 	cm.collisions = make([]*Contact, 0)
-	// todo(stig): do broad phase here
 
 	width := 1000.0
 	height := 1000.0
@@ -58,34 +57,35 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	cols := int(width / 20)
 	rows := int(height / 20)
 
-	totalCells := cols * rows
-
 	entityWidth := 20.0
 	entityHeight := 20.0
 
 	// create the grid
-	var grid [][]*Physics
-	grid = make([][]*Physics, totalCells)
-
-	//	hashChecks := 0
+	grid := make([][]*Physics, cols * rows)
 
 	for _, p := range cm.physics {
-		// if the entity is outside the grid ignore it
-		if p.Position.X-entityWidth/2.0 < 0 || p.Position.X+entityWidth/2.0 > width || p.Position.Y-entityHeight/2.0 < 0 || p.Position.Y+entityHeight/2.0 > height {
+
+		entityMinX := p.Position.X - entityWidth/2.0
+		entityMaxX := p.Position.X + entityWidth/2.0
+		entityMinY := p.Position.Y - entityHeight/2.0
+		entityMaxY := p.Position.Y + entityHeight/2.0
+
+		if entityMinX < 0 || entityMaxX > width || entityMinY < 0 || entityMaxY > height {
 			continue
 		}
+
 		// find extremes of cells that entity overlaps
 		// subtract min to shift grid to avoid negative numbers
-		entityMinX := math.Floor(((p.Position.X - entityWidth/2.0) - 0) / cellSize)
-		entityMaxX := math.Floor(((p.Position.X + entityWidth/2.0) - 0) / cellSize)
-		entityMinY := math.Floor(((p.Position.Y - entityHeight/2.0) - 0) / cellSize)
-		entityMaxY := math.Floor(((p.Position.Y + entityHeight/2.0) - 0) / cellSize)
+		entityMinCellX := int((entityMinX - 0) / cellSize)
+		entityMaxCellX := int((entityMaxX - 0) / cellSize)
+		entityMinCellY := int((entityMinY - 0) / cellSize)
+		entityMaxCellY := int((entityMaxY - 0) / cellSize)
 
 		// insert entity into each cell it overlaps
-		// we're looping to make sure that all cells between extremes are found
-		for cX := entityMinX; cX <= entityMaxX; cX++ {
-			for cY := entityMinY; cY <= entityMaxY; cY++ {
-				index := int(cY)*cols + int(cX)
+		// loop to make sure that all cells between extremes are found
+		for cellX := entityMinCellX; cellX <= entityMaxCellX; cellX++ {
+			for cellY := entityMinCellY; cellY <= entityMaxCellY; cellY++ {
+				index := cellY*cols + cellX
 				grid[index] = append(grid[index], p)
 			}
 		}
@@ -94,42 +94,49 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	checked := make(map[*Physics]map[*Physics]bool)
 
 	// alright, we got all of the suckers in a nice array, it's time to see if
-	// things are colliding
-	for _, list := range grid {
-		// no entities in this grid
-		if len(list) < 2 {
+	// they are colliding
+	for _, cell := range grid {
+		// if there is zero or one entity in this cell there can't be a collision
+		if len(cell) < 2 {
 			continue
 		}
 
-		for i := 0; i < len(list); i++ {
-			a := list[i]
-			for j := i + 1; j < len(list); j++ {
-				b := list[j]
-
+		// iterate over the enteties in the cell
+		for i := 0; i < len(cell); i++ {
+			a := cell[i]
+			// compare a with all the other entities 'after' it in the cell
+			for j := i + 1; j < len(cell); j++ {
+				b := cell[j]
+				// have this pair been checked before?
 				if checked := checked[a][b]; checked {
 					continue
 				}
 				if checked := checked[b][a]; checked {
 					continue
 				}
-
+				// do the narrow phase collision detection
 				collision, err := cm.GenerateContacts(a, b)
 				if err != nil {
 					log.Printf("error: %s", err)
 				}
+				// we got a proper contact, populate contact data with more data
 				if collision != nil {
 					collision.a = a
 					collision.b = b
 					collision.restitution = 0.1
 					cm.collisions = append(cm.collisions, collision)
 				}
+
+				// if the checked maps not yet setup, initialise them here
 				if checked[a] == nil {
 					checked[a] = make(map[*Physics]bool, 1)
 				}
-				checked[a][b] = true
 				if checked[b] == nil {
 					checked[b] = make(map[*Physics]bool, 1)
 				}
+
+				// mark this pair as checked
+				checked[a][b] = true
 				checked[b][a] = true
 			}
 		}
@@ -145,16 +152,12 @@ func (cm *CollisionManager) DetectCollisions() bool {
 // ResolveCollision will resolve all collisions found by DetectCollisions
 func (cm *CollisionManager) ResolveCollisions(duration float64) {
 
-	for _, collision := range cm.collisions {
-		collision.Resolve(duration)
-	}
-	return
-
 	numContacts := len(cm.collisions)
-	//	log.Printf("collusions %d", numContacts)
 	iterationsUsed := 0
 	iterations := numContacts * 2
 
+	// find the collision with the highest closing velocity and resolve that one
+	// first.
 	for iterationsUsed < iterations {
 		// find the contact with the largest closing velocity
 		max := math.MaxFloat64
@@ -171,7 +174,6 @@ func (cm *CollisionManager) ResolveCollisions(duration float64) {
 
 		// do we have anything worth resolving
 		if maxIndex == numContacts {
-			//			log.Printf("yeah nah")
 			break
 		}
 
