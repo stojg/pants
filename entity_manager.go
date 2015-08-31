@@ -73,10 +73,6 @@ func (em *EntityManager) Update(w *World, duration float64) {
 		}
 	}
 
-	//	for _, sprite := range em.sprites {
-	//		sprite.Tile = w.worldMap.TileFromWorld(em.physics[sprite.Id].Position)
-	//	}
-
 	em.collisionManager.DetectCollisions()
 	em.collisionManager.ResolveCollisions(duration)
 }

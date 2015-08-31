@@ -10,13 +10,6 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		return
 	}
 
-	//	if w.rand.Float32() > 0.9999999 {
-	//		x := w.rand.Intn(w.worldMap.Width);
-	//		y := w.rand.Intn(w.worldMap.Height)
-	//		w.worldMap.Base().Place(x, y, 5)
-	//		w.networkManager.BroadcastMap(w.worldMap.Compress())
-	//	}
-
 	if len(entityManager.entities) >= 100 {
 		return
 	}
