@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/stojg/pants/network"
 	"testing"
+	"math/rand"
 )
 
 func TestAddSprite(t *testing.T) {
@@ -16,15 +17,17 @@ func TestAddSprite(t *testing.T) {
 	}
 }
 
-// ~ 67549ns
+// ~ 294222ns
 func BenchmarkSpriteUpdate(b *testing.B) {
+	b.StopTimer()
 	list := NewEntityManager()
+	rand.Seed(1)
 	for i := 0; i < 100; i++ {
-		list.NewEntity(0, 0, "sprite.png")
+		list.NewEntity(rand.Float64()*1000, rand.Float64()*1000, "sprite.png")
 	}
 	s := network.NewServer("8080")
 	w := NewWorld(list, s)
-
+	b.StartTimer()
 	for n := 0; n < b.N; n++ {
 		list.Update(w, 0.0016)
 	}
