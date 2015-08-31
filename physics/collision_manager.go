@@ -61,7 +61,7 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	entityHeight := 20.0
 
 	// create the grid
-	grid := make([][]*Physics, cols * rows)
+	grid := make([][]*Physics, cols*rows)
 
 	for _, p := range cm.physics {
 
