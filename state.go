@@ -180,7 +180,7 @@ func (sm *StateMachine) Update() Actioner {
 	last.SetNext(transitionActions)
 	// add the actions from the next state
 	nextState := transition.getTargetState()
-	transitionActions.Back().SetNext(nextState.Actions())
+	transitionActions.Back().SetNext(nextState.EntryActions())
 	// Update the change of state
 	sm.currentState = nextState
 	return actions
