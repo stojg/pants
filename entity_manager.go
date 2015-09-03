@@ -47,7 +47,7 @@ func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	}
 
 	em.entities[entity.Id] = entity
-	em.ais[entity.Id] = &AIDrunkard{state: NewStateMachine(STATE_IDLE)}
+	em.ais[entity.Id] = NewBasicAI()
 	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, 1)
 	em.physics[entity.Id].SetDamping(0.99)
 
