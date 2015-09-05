@@ -47,14 +47,14 @@ func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
 	}
 
 	em.entities[entity.Id] = entity
-	em.ais[entity.Id] = NewBasicAI()
 	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, 1)
 	em.physics[entity.Id].SetDamping(0.99)
 
-	em.updated[entity.Id] = true
-
 	em.forceRegistry.Add(em.physics[entity.Id], gravity)
 	em.collisionManager.Add(em.physics[entity.Id])
+
+	em.ais[entity.Id] = NewBasicAI(entity.Id)
+	em.updated[entity.Id] = true
 	return entity.Id
 }
 
