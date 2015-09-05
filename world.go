@@ -4,6 +4,7 @@ import (
 	. "github.com/stojg/pants/grid"
 	"github.com/stojg/pants/network"
 	. "github.com/stojg/pants/physics"
+	"github.com/stojg/pants/timer"
 	. "github.com/stojg/pants/vector"
 	"log"
 	"math"
@@ -12,6 +13,7 @@ import (
 )
 
 const NetFPS = 50 * time.Millisecond
+const WORLD_FRAME_TIME = 0.016
 
 func NewWorld(list *EntityManager, s *network.Server) *World {
 	currentTime := time.Now()
@@ -102,15 +104,12 @@ func (w *World) worldTick() {
 	var accumulator float64
 	var frameTime float64
 	dt := 0.01
-	currentTime := time.Now().UnixNano()
+	timer := timer.NewTimer()
+	currentTime := timer.Seconds()
 	for {
-		newTime := time.Now().UnixNano()
-		frameTime = (float64(newTime-currentTime) / 1e9)
+		newTime := timer.Seconds()
+		frameTime = newTime - currentTime
 		currentTime = newTime
-
-		if frameTime > 0.017 {
-			log.Printf("world lag: %d ms", int((frameTime-0.016)*1000))
-		}
 
 		accumulator += frameTime
 		for accumulator >= dt {
