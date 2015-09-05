@@ -3,16 +3,11 @@ package main
 import (
 	. "github.com/stojg/pants/ai"
 	"github.com/stojg/pants/physics"
-	"github.com/stojg/pants/vector"
+	"github.com/stojg/pants/timer"
 )
 
 type AI interface {
 	Update(id uint64, w *World, t float64)
-}
-
-type BasicAI struct {
-	state    *StateMachine
-	steering Steering
 }
 
 /// Conditions
@@ -48,55 +43,57 @@ type IdleState struct {
 type HuntingState struct {
 	State
 	id       uint64
-	position *vector.Vec2
 	steering Steering
 }
 
-func (m *HuntingState) Actions() Actioner {
-	return &Hunt{
+func (m *HuntingState) Actions() []Actioner {
+	actions := make([]Actioner, 1)
+	actions = append(actions, &Hunt{
 		steering: m.steering,
-	}
+	})
+	return actions
 }
 
-func (m *HuntingState) EntryActions() Actioner {
-	m.position = &vector.Vec2{world.RandF64(800), world.RandF64(600)}
-	target := physics.NewPhysics(m.position.X, m.position.Y, 0, 0)
+func (m *HuntingState) EntryActions() []Actioner {
+	target := physics.NewPhysics(world.RandF64(800), world.RandF64(600), 0, 0)
 	m.steering = NewArrive(world.Physic(m.id), target, 10, 500)
 	return nil
+}
+
+type BasicAI struct {
+	stateMachine *StateMachine
+}
+
+type TimerCondition struct {
+	timer *timer.Timer
+	value float64
+}
+
+func (c *TimerCondition) Test() bool {
+	return c.timer.Seconds() > c.value
 }
 
 // AI implementation
 func NewBasicAI(id uint64) *BasicAI {
 
-	idleState := &IdleState{}
+	idle := &IdleState{}
 	hunting := &HuntingState{id: id}
 
-	huntingTransition := &Transition{
-		condition:   &TrueCondition{},
-		targetState: hunting,
-	}
+	ai := &BasicAI{stateMachine: NewStateMachine(idle)}
 
-	idleTransition := &Transition{
-		condition: &FalseCondition{},
-		targetState: idleState,
-	}
+	idle.AddTransitions(NewTransition(hunting, &TimerCondition{
+		value: 3.0,
+		timer: ai.stateMachine.timer,
+	}))
+	hunting.AddTransitions(NewTransition(idle, &FalseCondition{}))
 
-	idleState.transition = huntingTransition
-	hunting.transition = idleTransition
-
-	return &BasicAI{
-		state: NewStateMachine(idleState),
-	}
+	return ai
 }
 
 func (d *BasicAI) Update(id uint64, w *World, t float64) {
-	//	d.handleInputs(s)
-	for a := d.state.Update(); a != nil; a = a.Next() {
+	for _, a := range d.stateMachine.Update() {
 		if a != nil {
 			a.Act(id)
 		}
 	}
-}
-
-func (d *BasicAI) handleInputs(s *Entity) {
 }
