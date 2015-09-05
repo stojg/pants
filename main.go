@@ -10,6 +10,7 @@ import (
 )
 
 var entityManager *EntityManager
+var world *World
 
 func main() {
 	nCPU := runtime.NumCPU()
@@ -19,7 +20,7 @@ func main() {
 	server := network.NewServer("8081")
 	server.Start()
 
-	world := NewWorld(entityManager, server)
+	world = NewWorld(entityManager, server)
 
 	go world.worldTick()
 	go world.networkTick()
