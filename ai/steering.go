@@ -22,7 +22,7 @@ func NewSteeringOutput() *SteeringOutput {
 
 // Steering is the interface that all steering behaviour needs to follow
 type Steering interface {
-	Get(dt float64) *SteeringOutput
+	Get() *SteeringOutput
 	Target() *Physics
 	Entity() *Physics
 }
@@ -46,7 +46,7 @@ func (s *Seek) Target() *Physics {
 }
 
 // Get returns the steering output for Seek
-func (s *Seek) Get(dt float64) *SteeringOutput {
+func (s *Seek) Get() *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
 	steering.Linear = s.target.Position.Clone().Sub(s.entity.Position)
@@ -72,7 +72,7 @@ func NewFlee(entity, target *Physics) *Flee {
 }
 
 // Get returns the steering output for Flee
-func (s *Flee) Get(dt float64) *SteeringOutput {
+func (s *Flee) Get() *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
 	steering.Linear = s.entity.Position.Clone().Sub(s.target.Position)
@@ -121,7 +121,7 @@ func NewArrive(entity, target *Physics, targetRadius, slowRadius float64) *Arriv
 }
 
 // Get returns the steering output for Arrive
-func (s *Arrive) Get(dt float64) *SteeringOutput {
+func (s *Arrive) Get() *SteeringOutput {
 	steering := NewSteeringOutput()
 
 	direction := s.target.Position.Clone().Sub(s.entity.Position)
