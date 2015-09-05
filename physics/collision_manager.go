@@ -55,13 +55,12 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	cellSize := 20.0
 
 	cols := int(width / 20)
-	rows := int(height / 20)
 
 	entityWidth := 20.0
 	entityHeight := 20.0
 
-	// create the grid
-	grid := make([][]*Physics, cols*rows)
+	// create the grid = {cols} * {height/cellsize}
+	var grid [6000][]*Physics
 
 	for _, p := range cm.physics {
 
