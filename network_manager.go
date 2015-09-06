@@ -138,10 +138,18 @@ func (n *NetworkManager) handleTimeCheck(req *network.Request) {
 	log.Printf("time_request sent")
 }
 
+type ClickEvent struct {
+}
+
+func (evt *ClickEvent) Code() EventCode {
+	return EVT_CLICK
+}
+
 func (n *NetworkManager) handleInputRequest(msg *network.Request) {
 	var input InputRequest
 	if err := mapstructure.Decode(msg.DecodedMessage, &input); err != nil {
 		log.Printf("error: could not decode incoming message: %s", err)
 	}
+	events.ScheduleEvent(&ClickEvent{})
 	log.Printf("recieved input: %#V", input)
 }

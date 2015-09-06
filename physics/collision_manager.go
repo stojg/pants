@@ -11,6 +11,7 @@ func NewCollisionManager() *CollisionManager {
 		physics: make(map[uint64]*Physics, 0),
 	}
 }
+
 // CollisionManager keeps tracks and does collision testing between Physics
 // components
 type CollisionManager struct {
@@ -57,19 +58,21 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 	cols := int(width / 20)
 
-	entityWidth := 20.0
-	entityHeight := 20.0
-
 	// create the grid = {cols} * {height/cellsize}
-	var grid [6000][]uint64
+	var grid [2500][]uint64
 
 	for id, p := range cm.physics {
-
+		d := p.Data
+		if d.Height > d.Width {
+			p.collisionGeometry.(*Circle).radius = d.Height / 2
+		} else {
+			p.collisionGeometry.(*Circle).radius = d.Width / 2
+		}
 		// pre-calculate these values for performance reasonss
-		entityMinX := p.Position.X - entityWidth/2.0
-		entityMaxX := p.Position.X + entityWidth/2.0
-		entityMinY := p.Position.Y - entityHeight/2.0
-		entityMaxY := p.Position.Y + entityHeight/2.0
+		entityMinX := d.Position.X - d.Width/2.0
+		entityMaxX := d.Position.X + d.Width/2.0
+		entityMinY := d.Position.Y - d.Height/2.0
+		entityMaxY := d.Position.Y + d.Height/2.0
 
 		// entities outside of the grid should not be checked
 		if entityMinX < 0 || entityMaxX > width || entityMinY < 0 || entityMaxY > height {

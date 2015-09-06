@@ -4,6 +4,7 @@ import (
 	. "github.com/stojg/pants/physics"
 	. "github.com/stojg/pants/vector"
 	"github.com/stojg/tree"
+	"math"
 )
 
 func NewEntityManager() *EntityManager {
@@ -14,7 +15,7 @@ func NewEntityManager() *EntityManager {
 		boundingBoxes:    make(map[uint64]*tree.Rectangle),
 		updated:          make(map[uint64]bool),
 		forceRegistry:    &PhysicsForceRegistry{},
-		collisionManager: &CollisionManager{},
+		collisionManager: NewCollisionManager(),
 	}
 }
 
@@ -40,7 +41,8 @@ func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 
 	em.lastEntityID += 1
 
-	props := entityProperties[entType]
+	props := &EntityProperty{}
+	*props = *entityProperties[entType]
 
 	entity := &Entity{
 		Id:         em.lastEntityID,
@@ -51,16 +53,24 @@ func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 
 	em.entities[entity.Id] = entity
 	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, props.invMass, props.Width, props.Height)
-	em.physics[entity.Id].SetDamping(0.99)
+	em.physics[entity.Id].Data.Damping = 0.99
 
 	//	em.forceRegistry.Add(em.physics[entity.Id], gravity)
-	em.collisionManager.Add(em.physics[entity.Id])
+	em.collisionManager.Add(em.physics[entity.Id], entity.Id)
 
 	if props.ai {
 		em.controllers[entity.Id] = NewBasicAI(entity.Id)
 	}
 	em.updated[entity.Id] = true
 	return entity.Id
+}
+
+func (em *EntityManager) Remove(id uint64) {
+	em.entities[id].Dead = true
+	delete(em.physics, id)
+	delete(em.controllers, id)
+	em.collisionManager.Remove(id)
+	em.updated[id] = true
 }
 
 func (em *EntityManager) Update(w *World, duration float64) {
@@ -72,13 +82,30 @@ func (em *EntityManager) Update(w *World, duration float64) {
 	}
 
 	for id, p := range em.physics {
-		moved := p.Update(id, w, duration)
+		data := p.Data
+		p.Integrate(data, duration)
+
+		moved := false
+		if !data.Position.Equals(p.PrevData.Position) {
+			moved = true
+		}
+		if math.Abs(data.Orientation-p.PrevData.Orientation) < EPSILON {
+			moved = true
+		}
+		p.PrevData.Copy(data)
+
 		if moved {
 			em.updated[id] = true
 		}
 	}
 
 	em.collisionManager.DetectCollisions()
+	for _, collision := range em.collisionManager.Collisions() {
+		evt := &CollisionEvent{}
+		evt.a, evt.b = collision.Pair()
+		events.ScheduleEvent(evt)
+	}
+
 	em.collisionManager.ResolveCollisions(duration)
 }
 
@@ -94,14 +121,30 @@ func (em *EntityManager) Changed() []*EntityUpdate {
 func (em *EntityManager) entityUpdates(entityIds []uint64) []*EntityUpdate {
 	entities := make([]*EntityUpdate, 0, len(entityIds))
 	for _, id := range entityIds {
-		entities = append(entities, &EntityUpdate{
-			Id:          id,
-			X:           em.physics[id].Position.X,
-			Y:           em.physics[id].Position.Y,
-			Orientation: em.physics[id].Orientation,
-			Type:        em.entities[id].Type,
-			Properties:  em.entities[id].Properties,
-		})
+
+		update := &EntityUpdate{
+			Id:         id,
+			Type:       em.entities[id].Type,
+			Properties: em.entities[id].Properties,
+			Dead:       em.entities[id].Dead,
+		}
+		if physics, ok := em.physics[id]; ok {
+			update.Height = physics.Data.Height
+			update.Width = physics.Data.Width
+			update.X = physics.Data.Position.X
+			update.Y = physics.Data.Position.Y
+			update.Orientation = physics.Data.Orientation
+		}
+		entities = append(entities, update)
 	}
 	return entities
+}
+
+type CollisionEvent struct {
+	a uint64
+	b uint64
+}
+
+func (c *CollisionEvent) Code() EventCode {
+	return EVT_COLLISION
 }

@@ -69,15 +69,6 @@ var Network = (function () {
 
 var Basic = (function (assets, network) {
 
-	var entityTypes = {
-		0 : {
-			sprite: "assets/basics/arrow.png"
-		},
-		1 : {
-			sprite: "assets/basics/food.png"
-		}
-	};
-
 	var serverTimeDiff = 0;
 
 	var tileSize = 20;
@@ -155,22 +146,13 @@ var Basic = (function (assets, network) {
 			var nextTimestamp = serverTimeDiff + sprite.snapshots[1].timestamp;
 
 			var coefficient = (now - currentTimestamp) / (nextTimestamp - currentTimestamp);
-			var position = linearInterpolation(sprite.snapshots[0], sprite.snapshots[1], coefficient);
+			var data = linearInterpolation(sprite.snapshots[0], sprite.snapshots[1], coefficient);
 
-			if (sprite.type === 'graphics') {
-				sprite.clear();
-				sprite.lineStyle(1, 0xffffff, 1);
-				sprite.beginFill(0xffffff, 1);
-				sprite.moveTo(position.x, position.y);
-				sprite.lineTo(Number(sprite.snapshots[0].data.toX), Number(sprite.snapshots[0].data.toY));
-			} else {
-				var properties = sprite.snapshots[0].properties;
-				sprite.x = position.x;
-				sprite.y = position.y;
-				sprite.rotation = position.orientation;
-				sprite.height = properties.height;
-				sprite.width = properties.width;
-			}
+			sprite.x = data.x;
+			sprite.y = data.y;
+			sprite.rotation = data.orientation;
+			sprite.height = data.height;
+			sprite.width = data.width;
 
 			// we passed the time for the next timestamp
 			if (coefficient > 1) {
@@ -180,27 +162,41 @@ var Basic = (function (assets, network) {
 	}
 
 	var linearInterpolation = function (from, to, coef) {
-		var position = {x: 0, y: 0, orientation: 0};
+		var data = {x: 0, y: 0, orientation: 0, width: 0, height: 0};
 
 		var diffX = to.x - from.x;
 		if (Math.abs(diffX) < 0.1) {
-			position.x = from.x;
+			data.x = from.x;
 		} else {
-			position.x = from.x + coef * diffX;
+			data.x = from.x + coef * diffX;
 		}
 		var diffY = to.y - from.y;
 		if (Math.abs(diffY) < 0.1) {
-			position.y = from.y;
+			data.y = from.y;
 		} else {
-			position.y = from.y + coef * diffY;
+			data.y = from.y + coef * diffY;
 		}
 		var diffOrientation = to.orientation - from.orientation;
 		if (Math.abs(diffOrientation) < 0.1) {
-			position.orientation = to.orientation;
+			data.orientation = to.orientation;
 		} else {
-			position.orientation = from.orientation + coef * diffOrientation;
+			data.orientation = from.orientation + coef * diffOrientation;
 		}
-		return position;
+
+		var diffHeight = to.height - from.height;
+		if (Math.abs(diffHeight) < 0.1) {
+			data.height = to.height
+		} else {
+			data.height = from.height + coef * diffHeight;
+		}
+
+		var diffWidth = to.width- from.width;
+		if (Math.abs(diffWidth) < 0.1) {
+			data.width = to.width
+		} else {
+			data.width = from.width + coef * diffWidth;
+		}
+		return data
 	};
 
 	function createGraphic(entity) {
@@ -224,8 +220,8 @@ var Basic = (function (assets, network) {
 		sprite.y = entity.y;
 		sprite.anchor.x = 0.5;
 		sprite.anchor.y = 0.5;
-		sprite.height = entity.properties.height;
-		sprite.width = entity.properties.width;
+		sprite.height = entity.height;
+		sprite.width = entity.width;
 		return sprite;
 	}
 
@@ -274,15 +270,10 @@ var Basic = (function (assets, network) {
 		// create new sprite
 		if (typeof sprites[spriteData.id] === "undefined") {
 			var sprite;
-			//if (spriteData.type === "sprite") {
-				sprite = createSprite(spriteData);
-				container.addChild(sprite);
-				sprites[sprite.id] = sprite;
-				sprites[sprite.id].snapshots = [];
-			//} else {
-			//	console.log("unknown sprite type " + spriteData.type);
-			//	return;
-			//}
+			sprite = createSprite(spriteData);
+			container.addChild(sprite);
+			sprites[sprite.id] = sprite;
+			sprites[sprite.id].snapshots = [];
 		}
 
 		if (spriteData.dead) {

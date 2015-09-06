@@ -35,8 +35,8 @@ type ForceGenerator interface {
 }
 
 func (pg *StaticForce) UpdateForce(p *Physics, duration float64) {
-	if p.invMass == 0 {
+	if p.Data.InvMass == 0 {
 		return
 	}
-	p.AddForce(pg.force.Multiply(1 / p.invMass))
+	p.Data.Forces.Add(pg.force.Multiply(1 / p.Data.InvMass))
 }

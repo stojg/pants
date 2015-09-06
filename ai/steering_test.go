@@ -27,7 +27,7 @@ func TestArriveWillMove(t *testing.T) {
 	entity := NewPhysics(0, 0, 0, 1, 0, 0)
 	arrive := NewArrive(entity, NewPhysics(12, 0, 0, 1, 0, 0), 10, 20)
 	actual := arrive.Get().Linear.Length()
-	expected := entity.MaxAcceleration()
+	expected := entity.Data.MaxAcceleration
 	if actual != expected {
 		t.Errorf("Arrive.Get expected %f, got %f", expected, actual)
 	}

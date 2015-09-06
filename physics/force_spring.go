@@ -12,8 +12,8 @@ type SpringForce struct {
 
 func (sf *SpringForce) UpdateForce(p *Physics, duration float64) {
 	// calculate the vector of the spring
-	force := p.Position.Clone()
-	force.Sub(sf.other.Position)
+	force := p.Data.Position.Clone()
+	force.Sub(sf.other.Data.Position)
 
 	// calculate the magnitude of the force
 	magnitude := force.Length()
@@ -24,5 +24,5 @@ func (sf *SpringForce) UpdateForce(p *Physics, duration float64) {
 	// calculate the final force and apply it
 	force.Normalize()
 	force.Scale(-magnitude)
-	p.AddForce(force)
+	p.Data.Forces.Add(force)
 }

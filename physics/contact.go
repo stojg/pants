@@ -32,9 +32,9 @@ func (c *Contact) resolveInterpenetration() {
 	}
 
 	// Calculate the total inverse mass
-	totalInvMass := c.a.invMass
+	totalInvMass := c.a.Data.InvMass
 	if c.b != nil {
-		totalInvMass += c.b.invMass
+		totalInvMass += c.b.Data.InvMass
 	}
 
 	// Both objects have infinite mass, so neither can be moved
@@ -44,9 +44,9 @@ func (c *Contact) resolveInterpenetration() {
 
 	movePerInvMass := c.normal.NewScale(c.penetration / totalInvMass)
 	// Move the objects out of contact depending on their mass
-	c.a.Position.Add(movePerInvMass.NewScale(c.a.invMass))
-	if c.b != nil {
-		c.b.Position.Add(movePerInvMass.NewScale(-c.b.invMass))
+	c.a.Data.Position.Add(movePerInvMass.NewScale(c.a.Data.InvMass))
+	if c.b.Data != nil {
+		c.b.Data.Position.Add(movePerInvMass.NewScale(-c.b.Data.InvMass))
 	}
 
 	// set the penetration to zero
@@ -69,9 +69,9 @@ func (collision *Contact) resolveVelocity(duration float64) {
 	newSepVelocity := -separatingVelocity * collision.restitution
 
 	// Check the velocity build up due to acceleration only
-	accCausedVelocity := collision.a.forces.Clone()
+	accCausedVelocity := collision.a.Data.Forces.Clone()
 	if collision.b != nil {
-		accCausedVelocity.Sub(collision.b.forces)
+		accCausedVelocity.Sub(collision.b.Data.Forces)
 	}
 
 	// If we've got closing velocity due to acceleration buildup,
@@ -90,9 +90,9 @@ func (collision *Contact) resolveVelocity(duration float64) {
 	// We apply the change of velocity to each object in proportion to
 	// their inverse mass (i.e., those with lower inverse mass (higher mass)
 	// get less change in velocity
-	totalInvMass := collision.a.invMass
+	totalInvMass := collision.a.Data.InvMass
 	if collision.b != nil {
-		totalInvMass += collision.b.invMass
+		totalInvMass += collision.b.Data.InvMass
 	}
 
 	// If all objects have infinite mass the will not react to any impulses
@@ -107,20 +107,20 @@ func (collision *Contact) resolveVelocity(duration float64) {
 	impulseWithDirection := collision.normal.NewScale(impulse)
 
 	// change velocity for a in proportion to its inverse mass
-	velocityChangeA := impulseWithDirection.NewScale(collision.a.invMass)
-	collision.a.Velocity.Add(velocityChangeA)
+	velocityChangeA := impulseWithDirection.NewScale(collision.a.Data.InvMass)
+	collision.a.Data.Velocity.Add(velocityChangeA)
 
 	// change velocity for b in proportion to its inverse mass
 	if collision.b != nil {
-		velocityChangeB := impulseWithDirection.NewScale(-collision.b.invMass)
-		collision.b.Velocity.Add(velocityChangeB)
+		velocityChangeB := impulseWithDirection.NewScale(-collision.b.Data.InvMass)
+		collision.b.Data.Velocity.Add(velocityChangeB)
 	}
 }
 
 func (c *Contact) separatingVelocity() float64 {
-	relativeVel := c.a.Velocity.Clone()
+	relativeVel := c.a.Data.Velocity.Clone()
 	if c.b != nil {
-		relativeVel.Sub(c.b.Velocity)
+		relativeVel.Sub(c.b.Data.Velocity)
 	}
 	return relativeVel.Dot(c.normal)
 }

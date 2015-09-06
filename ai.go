@@ -31,8 +31,8 @@ type Hunt struct {
 
 func (a *Hunt) Act(id uint64) {
 	o := a.steering.Get()
-	world.Physic(id).AddForce(o.Linear.Scale(world.Physic(id).Mass()))
-	world.Physic(id).SetRotations(o.Angular)
+	world.Physic(id).Data.Forces.Add(o.Linear.Scale(world.Physic(id).Data.Mass()))
+	world.Physic(id).Data.Rotations = o.Angular
 }
 
 // Concrete state implementation

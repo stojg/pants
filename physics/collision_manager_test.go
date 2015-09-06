@@ -75,10 +75,10 @@ func TestCMDetectCollisions(t *testing.T) {
 	cm := NewCollisionManager()
 	a := NewPhysics(10, 10, 0, 1, 20, 20)
 	// standing still
-	a.Velocity = &vector.Vec2{0, 0}
+	a.Data.Velocity = &vector.Vec2{0, 0}
 	b := NewPhysics(20, 10, 0, 1, 20, 20)
 	// moving towards a
-	b.Velocity = &vector.Vec2{-1, 0}
+	b.Data.Velocity = &vector.Vec2{-1, 0}
 	cm.Add(a, 0)
 	cm.Add(b, 1)
 
@@ -121,25 +121,25 @@ func TestCMDetectCollisions(t *testing.T) {
 	}
 
 	aExpectedPosition := &vector.Vec2{5, 10}
-	if !a.Position.Equals(aExpectedPosition) {
-		t.Errorf("a.Position should be %V, not %V", aExpectedPosition, a.Position)
+	if !a.Data.Position.Equals(aExpectedPosition) {
+		t.Errorf("a.Position should be %V, not %V", aExpectedPosition, a.Data.Position)
 	}
 
 	bExpectedPosition := &vector.Vec2{25, 10}
-	if !b.Position.Equals(bExpectedPosition) {
-		t.Errorf("b.Position should be %V, not %V", bExpectedPosition, b.Position)
+	if !b.Data.Position.Equals(bExpectedPosition) {
+		t.Errorf("b.Position should be %V, not %V", bExpectedPosition, b.Data.Position)
 	}
 
 	// since a was standing still it should take all the energy
 	aExpectedVelocity := &vector.Vec2{-1, 0}
-	if !a.Velocity.Equals(aExpectedVelocity) {
-		t.Errorf("b.Velocity should be {%f, %f}, not {%f, %f}", aExpectedVelocity.X, aExpectedVelocity.Y, a.Velocity.X, a.Velocity.Y)
+	if !a.Data.Velocity.Equals(aExpectedVelocity) {
+		t.Errorf("b.Velocity should be {%f, %f}, not {%f, %f}", aExpectedVelocity.X, aExpectedVelocity.Y, a.Data.Velocity.X, a.Data.Velocity.Y)
 	}
 
 	// since a was standing still it should take all the energy and b will stop
 	bExpectedVelocity := &vector.Vec2{0, 0}
-	if !b.Velocity.Equals(bExpectedVelocity) {
-		t.Errorf("b.Velocity should be {%f, %f}, not {%f, %f}", bExpectedVelocity.X, bExpectedVelocity.Y, b.Velocity.X, b.Velocity.Y)
+	if !b.Data.Velocity.Equals(bExpectedVelocity) {
+		t.Errorf("b.Velocity should be {%f, %f}, not {%f, %f}", bExpectedVelocity.X, bExpectedVelocity.Y, b.Data.Velocity.X, b.Data.Velocity.Y)
 	}
 }
 
@@ -148,10 +148,10 @@ func BenchmarkDetectCollisions(bench *testing.B) {
 	cm := NewCollisionManager()
 	a := NewPhysics(10, 10, 0, 1, 0, 0)
 	// standing still
-	a.Velocity = &vector.Vec2{0, 0}
+	a.Data.Velocity = &vector.Vec2{0, 0}
 	b := NewPhysics(20, 10, 0, 1, 0, 0)
 	// moving towards a
-	b.Velocity = &vector.Vec2{-1, 0}
+	b.Data.Velocity = &vector.Vec2{-1, 0}
 	cm.Add(a, 0)
 	cm.Add(b, 1)
 

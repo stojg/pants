@@ -18,6 +18,7 @@ func TestAddSprite(t *testing.T) {
 }
 
 // ~ 294222ns
+// ~ 135567ns
 func BenchmarkSpriteUpdate(b *testing.B) {
 	b.StopTimer()
 	list := NewEntityManager()

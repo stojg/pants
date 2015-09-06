@@ -49,9 +49,9 @@ func (s *Seek) Target() *Physics {
 func (s *Seek) Get() *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
-	steering.Linear = s.target.Position.Clone().Sub(s.entity.Position)
+	steering.Linear = s.target.Data.Position.Clone().Sub(s.entity.Data.Position)
 	// Go full speed ahead
-	steering.Linear.Normalize().Scale(s.entity.MaxAcceleration())
+	steering.Linear.Normalize().Scale(s.entity.Data.MaxAcceleration)
 	return steering
 }
 
@@ -75,9 +75,9 @@ func NewFlee(entity, target *Physics) *Flee {
 func (s *Flee) Get() *SteeringOutput {
 	steering := NewSteeringOutput()
 	// Get the direction to the target
-	steering.Linear = s.entity.Position.Clone().Sub(s.target.Position)
+	steering.Linear = s.entity.Data.Position.Clone().Sub(s.target.Data.Position)
 	// Go full speed ahead
-	steering.Linear.Normalize().Scale(s.entity.MaxAcceleration())
+	steering.Linear.Normalize().Scale(s.entity.Data.MaxAcceleration)
 	return steering
 }
 
@@ -124,7 +124,7 @@ func NewArrive(entity, target *Physics, targetRadius, slowRadius float64) *Arriv
 func (s *Arrive) Get() *SteeringOutput {
 	steering := NewSteeringOutput()
 
-	direction := s.target.Position.Clone().Sub(s.entity.Position)
+	direction := s.target.Data.Position.Clone().Sub(s.entity.Data.Position)
 	distance := direction.Length()
 
 	// We have arrived, no output
@@ -132,7 +132,7 @@ func (s *Arrive) Get() *SteeringOutput {
 		return steering
 	}
 
-	targetSpeed := s.entity.MaxVelocity()
+	targetSpeed := s.entity.Data.MaxVelocity
 	// We are inside the slow radius, so don't go full speed
 	if distance < s.slowRadius {
 		targetSpeed *= distance / s.slowRadius
@@ -143,12 +143,12 @@ func (s *Arrive) Get() *SteeringOutput {
 	targetVelocity.Normalize().Scale(targetSpeed)
 
 	// Acceleration tries to get to the target velocity
-	steering.Linear = targetVelocity.Sub(s.entity.Velocity)
+	steering.Linear = targetVelocity.Sub(s.entity.Data.Velocity)
 	// try to get there in timeToTarget seconds
 	steering.Linear.Scale(1 / s.timeToTarget)
 
-	if steering.Linear.Length() > s.entity.MaxAcceleration() {
-		steering.Linear = steering.Linear.Normalize().Scale(s.entity.MaxAcceleration())
+	if steering.Linear.Length() > s.entity.Data.MaxAcceleration {
+		steering.Linear = steering.Linear.Normalize().Scale(s.entity.Data.MaxAcceleration)
 	}
 	return steering
 }

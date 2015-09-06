@@ -15,6 +15,12 @@ import (
 const NetFPS = 50 * time.Millisecond
 const WORLD_FRAME_TIME = 0.016
 
+var events *EventManager
+
+func init() {
+	events = NewEventManager()
+}
+
 func NewWorld(list *EntityManager, s *network.Server) *World {
 	currentTime := time.Now()
 
@@ -23,7 +29,7 @@ func NewWorld(list *EntityManager, s *network.Server) *World {
 		gameTicked:    currentTime,
 		rand:          rand.New(rand.NewSource(time.Now().UnixNano())),
 		entityManager: list,
-		director:      &Director{},
+		director:      NewDirector(),
 		server:        s,
 	}
 
@@ -38,7 +44,6 @@ func NewWorld(list *EntityManager, s *network.Server) *World {
 		}
 	}
 	w.worldMap = wMap
-
 	return w
 }
 
@@ -57,13 +62,12 @@ type World struct {
 }
 
 type EntityUpdate struct {
-	Id          uint64            `bson:",minsize"`
-	X, Y        float64           `bson:",minsize,omitempty"`
-	Orientation float64           `bson:",minsize"`
-	Type        EntityType        `bson:",minsize"`
-	Dead        bool              `bson:",minsize,omitempty"`
-	Data        map[string]string `bson:",minsize,omitempty"`
-	Properties  *EntityProperty
+	Id                  uint64     `bson:",minsize"`
+	X, Y, Height, Width float64    `bson:",minsize,omitempty"`
+	Orientation         float64    `bson:",minsize"`
+	Type                EntityType `bson:",minsize"`
+	Dead                bool       `bson:",minsize,omitempty"`
+	Properties          *EntityProperty
 }
 
 func (w *World) RandF64(x int) float64 {
@@ -122,6 +126,9 @@ func (w *World) worldTick() {
 
 		// world AI
 		w.director.Update(w, dt, gameTime)
+
+		// tell the event manager to dispatch all queued events
+		events.DispatchEvents()
 	}
 
 }

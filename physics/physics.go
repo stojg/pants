@@ -1,103 +1,53 @@
 package physics
 
 import (
+	"github.com/stojg/pants/structs"
 	. "github.com/stojg/pants/vector"
 	"math"
 )
 
-type DebugWriter interface {
-	Line(*Vec2, *Vec2)
-}
-
 type Physics struct {
-	Position           *Vec2    // current position
-	prevPosition       *Vec2    // previous position
-	Velocity           *Vec2    // current velocity
-	maxVelocity        float64  // max possible velocity
-	Acceleration       *Vec2    // current acceleration
-	maxAcceleration    float64  // max acceleration
-	Orientation        float64  // current orientation in radians
-	prevOrientation    float64  // previous orientation in radians
-	AngularVelocity    float64  // rotational velocity in radians/sec
-	maxAngularVelocity float64  // max angular velocity
-	rotations          float64  // rotational acceleration
-	forces             *Vec2    // accumulated forces acting on this component
-	invMass            float64  // the inverse mass of this object
-	damping            float64  // general damping
-	collisionGeometry  Geometry // the geometry used for collision detection
-	width              float64
-	height             float64
+	Data              *structs.Data
+	PrevData          *structs.Data
+	collisionGeometry Geometry // the geometry used for collision detection
 }
 
 func NewPhysics(x, y, orientation, invMass, width, height float64) *Physics {
 
+	data := structs.NewData()
+	data.Position = &Vec2{X: x, Y: y}
+	data.Orientation = orientation
+	data.InvMass = invMass
+	data.Width = width
+	data.Height = height
+	data.MaxVelocity = 300
+	data.MaxAcceleration = 100
+
 	p := &Physics{
-		Position:        &Vec2{X: x, Y: y},
-		prevPosition:    &Vec2{X: x, Y: y},
-		Velocity:        &Vec2{},
-		maxVelocity:     300,
-		Acceleration:    &Vec2{},
-		maxAcceleration: 100,
-		Orientation:     orientation,
-		prevOrientation: orientation,
-		forces:          &Vec2{},
-		damping:         0.999,
-		width:           width,
-		height:          height,
+		Data:              data,
+		PrevData:          structs.NewData(),
+		collisionGeometry: &Circle{position: data.Position},
 	}
 
-	p.invMass = invMass
-
-	var radius float64
-	if width > height {
-		radius = width / 2
-	} else {
-		radius = height / 2
-	}
-
-	p.collisionGeometry = &Circle{
-		position: p.Position,
-		radius:   radius,
-	}
+	p.PrevData.Copy(p.Data)
+	p.SetSize(width, height)
 
 	return p
 }
 
-func (c *Physics) Clone() *Physics {
-	t := c.Position.Clone()
-	pc := NewPhysics(t.X, t.Y, 0, 1/c.invMass, c.width, c.height)
-	pc.Velocity = c.Velocity.Clone()
-	return pc
+func (p *Physics) SetSize(width, height float64) {
+	p.Data.Width = width
+	p.Data.Height = height
+	if width > height {
+		p.collisionGeometry.(*Circle).radius = width / 2
+	} else {
+		p.collisionGeometry.(*Circle).radius = height / 2
+	}
 }
 
-func (c *Physics) Update(id uint64, w DebugWriter, duration float64) bool {
+func (c *Physics) Integrate(data *structs.Data, duration float64) {
 
-	//	if c.Velocity.Length() > 1 {
-	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.Velocity))
-	//	}
-	//
-	//	if c.forces.Length() > 1 {
-	//		w.Line(c.Position.Clone(), c.Position.Clone().Add(c.forces.Multiply(duration*10).Multiply(-1)))
-	//	}
-
-	c.integrate(id, duration)
-
-	// check if this component has changed position or rotations since last
-	// update
-	updated := false
-	if !c.Position.Equals(c.prevPosition) {
-		c.prevPosition.Copy(c.Position)
-		updated = true
-	}
-	if math.Abs(c.prevOrientation-c.Orientation) < EPSILON {
-		c.prevOrientation = c.Orientation
-		updated = true
-	}
-	return updated
-}
-
-func (c *Physics) integrate(id uint64, duration float64) {
-	if c.invMass <= 0 {
+	if data.InvMass <= 0 {
 		return
 	}
 
@@ -106,57 +56,22 @@ func (c *Physics) integrate(id uint64, duration float64) {
 	}
 
 	// update linear position
-	c.Position.Add(c.Velocity.Multiply(duration))
+	data.Position.Add(data.Velocity.Multiply(duration))
 
 	// Work out the acceleration from the force
-	resultingAcc := c.Acceleration.Clone()
-	resultingAcc.Add(c.forces.Multiply(c.invMass))
+	resultingAcc := data.Acceleration.Clone()
+	resultingAcc.Add(data.Forces.Multiply(data.InvMass))
 
 	// update linear velocity from the acceleration
-	c.Velocity.Add(resultingAcc.Multiply(duration))
+	data.Velocity.Add(resultingAcc.Multiply(duration))
 
 	// impose drag
-	c.Velocity = c.Velocity.Multiply(math.Pow(c.damping, duration))
+	data.Velocity = data.Velocity.Multiply(math.Pow(data.Damping, duration))
 
 	// look in the direction where you want to go
-	c.Orientation = c.Velocity.ToOrientation()
+	data.Orientation = data.Velocity.ToOrientation()
+	// data.Orientation += data.Rotations * duration
 
 	// clear forces
-	c.clearForces()
-}
-
-func (c *Physics) Mass() float64 {
-	return 1 / c.invMass
-}
-
-func (c *Physics) SetMass(m float64) {
-	c.invMass = 1 / m
-}
-
-func (c *Physics) SetDamping(d float64) {
-	c.damping = d
-}
-
-func (c *Physics) SetAcceleration(a *Vec2) {
-	c.Acceleration = a
-}
-
-func (p *Physics) MaxAcceleration() float64 {
-	return p.maxAcceleration
-}
-
-func (p *Physics) MaxVelocity() float64 {
-	return p.maxVelocity
-}
-
-func (c *Physics) SetRotations(a float64) {
-	c.rotations = a
-}
-
-func (c *Physics) AddForce(v *Vec2) {
-	c.forces.Add(v)
-}
-
-func (c *Physics) clearForces() {
-	c.forces.Clear()
+	c.Data.Forces.Clear()
 }

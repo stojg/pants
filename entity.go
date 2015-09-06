@@ -46,10 +46,12 @@ func init() {
 		Sprite:  "assets/basics/small_circle.png",
 		Height:  16,
 		Width:   16,
-		invMass: 0,
+		invMass: 5,
 	}
-
 }
+
+//func GetProps(e EntityType) *EntityProperty {
+//}
 
 type Entity struct {
 	Id         uint64 `bson:",minsize"`
@@ -58,6 +60,7 @@ type Entity struct {
 	Type       EntityType
 	Properties *EntityProperty
 	Tile       *grid.Node
+	Dead       bool
 }
 
 func (s *Entity) AddInput(i *InputRequest) {

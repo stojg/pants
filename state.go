@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/stojg/pants/timer"
-	"log"
+	//	"log"
 )
 
 type Condition interface {
@@ -148,7 +148,7 @@ func (sm *StateMachine) Update() []Actioner {
 			// we have nothing to do
 			return nil
 		} else {
-			log.Printf("initial state %T", sm.initialState)
+			//			log.Printf("initial state %T", sm.initialState)
 			// Transition to the first state
 			sm.currentState = sm.initialState
 			// return initial state's actions
@@ -163,7 +163,7 @@ func (sm *StateMachine) Update() []Actioner {
 	for _, testTransition := range sm.currentState.Transitions() {
 		// check if this transition should trigger
 		if testTransition.isTriggered() {
-			log.Printf("transition %T triggered", testTransition)
+			//			log.Printf("transition %T triggered", testTransition)
 			transition = testTransition
 			break
 		}
@@ -174,7 +174,7 @@ func (sm *StateMachine) Update() []Actioner {
 		return sm.currentState.Actions()
 	}
 
-	log.Printf("transitioning from %T to %T", sm.currentState, transition.targetState)
+	//	log.Printf("transitioning from %T to %T", sm.currentState, transition.targetState)
 
 	// we are going through a transition so create a list of actions from the
 	// - current states exit action(s)
