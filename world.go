@@ -60,9 +60,10 @@ type EntityUpdate struct {
 	Id          uint64            `bson:",minsize"`
 	X, Y        float64           `bson:",minsize,omitempty"`
 	Orientation float64           `bson:",minsize"`
-	Type        string            `bson:",minsize,omitempty"`
+	Type        EntityType        `bson:",minsize"`
 	Dead        bool              `bson:",minsize,omitempty"`
 	Data        map[string]string `bson:",minsize,omitempty"`
+	Properties  *EntityProperty
 }
 
 func (w *World) RandF64(x int) float64 {

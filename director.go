@@ -10,13 +10,20 @@ func (director *Director) Update(w *World, frameTime, gameTime float64) {
 		return
 	}
 
-	if len(entityManager.entities) >= 100 {
+	if len(entityManager.entities) >= 400 {
 		return
 	}
+
+	entType := ENT_ENT1
+	rand := w.rand.Float64()
+	if rand > 0.9 {
+		entType = ENT_FOOD
+	}
+
 	director.lastAction = gameTime
 	w.entityManager.NewEntity(
 		w.rand.Float64()*1000,
 		w.rand.Float64()*1000,
-		"assets/basics/arrow.png",
+		entType,
 	)
 }

@@ -36,24 +36,29 @@ func init() {
 	gravity.SetForce(&Vec2{0, 10})
 }
 
-func (em *EntityManager) NewEntity(x, y float64, image string) uint64 {
+func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 
 	em.lastEntityID += 1
+
+	props := entityProperties[entType]
+
 	entity := &Entity{
-		Id:     em.lastEntityID,
-		Type:   "sprite",
-		Image:  image,
-		inputs: make([]*InputRequest, 0),
+		Id:         em.lastEntityID,
+		Type:       entType,
+		inputs:     make([]*InputRequest, 0),
+		Properties: props,
 	}
 
 	em.entities[entity.Id] = entity
-	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, 1)
+	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, props.invMass, props.Width, props.Height)
 	em.physics[entity.Id].SetDamping(0.99)
 
-//	em.forceRegistry.Add(em.physics[entity.Id], gravity)
+	//	em.forceRegistry.Add(em.physics[entity.Id], gravity)
 	em.collisionManager.Add(em.physics[entity.Id])
 
-	em.ais[entity.Id] = NewBasicAI(entity.Id)
+	if props.ai {
+		em.ais[entity.Id] = NewBasicAI(entity.Id)
+	}
 	em.updated[entity.Id] = true
 	return entity.Id
 }
@@ -79,11 +84,9 @@ func (em *EntityManager) Update(w *World, duration float64) {
 
 func (em *EntityManager) Changed() []*EntityUpdate {
 	// @todo(stig): it is possible that this might be called before the em.sprite has been fully setup, ie a race condition
-	ids := make([]uint64, len(em.entities))
-	i := 0
+	ids := make([]uint64,0)
 	for k := range em.entities {
-		ids[i] = k
-		i++
+		ids = append(ids, k)
 	}
 	return em.entityUpdates(ids)
 }
@@ -97,9 +100,7 @@ func (em *EntityManager) entityUpdates(entityIds []uint64) []*EntityUpdate {
 			Y:           em.physics[id].Position.Y,
 			Orientation: em.physics[id].Orientation,
 			Type:        em.entities[id].Type,
-			Data: map[string]string{
-				"Image": em.entities[id].Image,
-			},
+			Properties:  em.entities[id].Properties,
 		})
 	}
 	return entities

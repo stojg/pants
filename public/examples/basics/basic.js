@@ -24,8 +24,6 @@ var Network = (function () {
 
 	var messageHandler;
 
-	var tileSize = 20;
-
 	function onMessage(evt) {
 		try {
 			var reader = new FileReader();
@@ -39,7 +37,7 @@ var Network = (function () {
 		}
 	}
 
-	function onOpen(evt) {
+	function onOpen() {
 		console.log("connection opened");
 		sendMsg({
 			"topic": "time_request",
@@ -47,7 +45,7 @@ var Network = (function () {
 		});
 	}
 
-	function onClose(evt) {
+	function onClose() {
 		console.log("connection closed");
 	}
 
@@ -57,7 +55,7 @@ var Network = (function () {
 
 	return {
 		connect: function (msgHandler) {
-			messageHandler = msgHandler
+			messageHandler = msgHandler;
 			conn = new WebSocket("ws://" + document.location.host + "/ws");
 			conn.binaryType = "blob";
 			conn.onclose = onClose;
@@ -71,7 +69,18 @@ var Network = (function () {
 
 var Basic = (function (assets, network) {
 
+	var entityTypes = {
+		0 : {
+			sprite: "assets/basics/arrow.png"
+		},
+		1 : {
+			sprite: "assets/basics/food.png"
+		}
+	};
+
 	var serverTimeDiff = 0;
+
+	var tileSize = 20;
 
 	var serverLatency = 0;
 
@@ -81,7 +90,7 @@ var Basic = (function (assets, network) {
 
 	var renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight, {backgroundColor: 0x00698B});
 
-	window.onresize = function (event) {
+	window.onresize = function () {
 		var w = window.innerWidth;
 		var h = window.innerHeight;
 		//this part resizes the canvas but keeps ratio the same
@@ -93,7 +102,6 @@ var Basic = (function (assets, network) {
 
 	// create the root of the scene graph
 	var stage = new PIXI.Container();
-
 
 	var backgroundStage = new PIXI.Container();
 	backgroundStage.interactive = true;
@@ -110,15 +118,7 @@ var Basic = (function (assets, network) {
 
 	stage.addChild(backgroundStage);
 
-	var spriteContainer = new PIXI.ParticleContainer(10000, {
-		scale: true,
-		position: true,
-		rotation: true,
-		uvs: false,
-		alpha: false,
-		x: 0,
-		y: 0
-	});
+	var spriteContainer = new PIXI.Container();
 
 	stage.addChild(spriteContainer);
 
@@ -164,12 +164,14 @@ var Basic = (function (assets, network) {
 				sprite.moveTo(position.x, position.y);
 				sprite.lineTo(Number(sprite.snapshots[0].data.toX), Number(sprite.snapshots[0].data.toY));
 			} else {
+				var properties = sprite.snapshots[0].properties;
 				sprite.x = position.x;
 				sprite.y = position.y;
 				sprite.rotation = position.orientation;
-				sprite.height = 20;
-				sprite.width = 20;
+				sprite.height = properties.height;
+				sprite.width = properties.width;
 			}
+
 			// we passed the time for the next timestamp
 			if (coefficient > 1) {
 				sprite.snapshots.shift();
@@ -213,17 +215,17 @@ var Basic = (function (assets, network) {
 	}
 
 	function createSprite(entity) {
-		var data = entity.data;
-		var texture = PIXI.Texture.fromImage(data.Image, true, PIXI.SCALE_MODES.LINEAR);
+		var image = entity.properties.sprite;
+		var texture = PIXI.Texture.fromImage(image, true, PIXI.SCALE_MODES.LINEAR);
 		var sprite = new PIXI.Sprite(texture);
 		sprite.id = entity.id;
-		sprite.type = "sprite";
+		sprite.type = entity.type;
 		sprite.x = entity.x;
 		sprite.y = entity.y;
 		sprite.anchor.x = 0.5;
 		sprite.anchor.y = 0.5;
-		sprite.height = 20;
-		sprite.width = 20;
+		sprite.height = entity.properties.height;
+		sprite.width = entity.properties.width;
 		return sprite;
 	}
 
@@ -234,6 +236,7 @@ var Basic = (function (assets, network) {
 		console.log("Map received");
 		var layerContainer = new PIXI.Container();
 		for (var key in msg.data) {
+			if (!msg.data.hasOwnProperty(key)) { continue; }
 			var tile = msg.data[key];
 			if (typeof backgrounds[tile.tiletype] !== 'undefined') {
 				graphics.beginFill(backgrounds[tile.tiletype], 1);
@@ -271,15 +274,15 @@ var Basic = (function (assets, network) {
 		// create new sprite
 		if (typeof sprites[spriteData.id] === "undefined") {
 			var sprite;
-			if (spriteData.type === "sprite") {
+			//if (spriteData.type === "sprite") {
 				sprite = createSprite(spriteData);
 				container.addChild(sprite);
 				sprites[sprite.id] = sprite;
 				sprites[sprite.id].snapshots = [];
-			} else {
-				console.log("unknown sprite type " + spriteData.type);
-				return;
-			}
+			//} else {
+			//	console.log("unknown sprite type " + spriteData.type);
+			//	return;
+			//}
 		}
 
 		if (spriteData.dead) {

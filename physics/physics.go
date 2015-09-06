@@ -25,9 +25,11 @@ type Physics struct {
 	invMass            float64  // the inverse mass of this object
 	damping            float64  // general damping
 	collisionGeometry  Geometry // the geometry used for collision detection
+	width              float64
+	height             float64
 }
 
-func NewPhysics(x, y, orientation, mass float64) *Physics {
+func NewPhysics(x, y, orientation, invMass, width, height float64) *Physics {
 
 	p := &Physics{
 		Position:        &Vec2{X: x, Y: y},
@@ -40,15 +42,22 @@ func NewPhysics(x, y, orientation, mass float64) *Physics {
 		prevOrientation: orientation,
 		forces:          &Vec2{},
 		damping:         0.999,
+		width:           width,
+		height:          height,
 	}
 
-	if mass > 0 {
-		p.invMass = 1 / mass
+	p.invMass = invMass
+
+	var radius float64
+	if width > height {
+		radius = width/2
+	} else {
+		radius = height/2
 	}
 
 	p.collisionGeometry = &Circle{
 		position: p.Position,
-		radius:   10,
+		radius:   radius,
 	}
 
 	return p
@@ -56,7 +65,7 @@ func NewPhysics(x, y, orientation, mass float64) *Physics {
 
 func (c *Physics) Clone() *Physics {
 	t := c.Position.Clone()
-	pc := NewPhysics(t.X, t.Y, 0, 1/c.invMass)
+	pc := NewPhysics(t.X, t.Y, 0, 1/c.invMass, c.width, c.height)
 	pc.Velocity = c.Velocity.Clone()
 	return pc
 }

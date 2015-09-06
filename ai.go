@@ -55,7 +55,7 @@ func (m *HuntingState) Actions() []Actioner {
 }
 
 func (m *HuntingState) EntryActions() []Actioner {
-	target := physics.NewPhysics(world.RandF64(800), world.RandF64(600), 0, 0)
+	target := physics.NewPhysics(world.RandF64(800), world.RandF64(600), 0, 0, 0, 0)
 	m.steering = NewArrive(world.Physic(m.id), target, 10, 500)
 	return nil
 }

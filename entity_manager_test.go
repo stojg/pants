@@ -8,7 +8,7 @@ import (
 
 func TestAddSprite(t *testing.T) {
 	list := NewEntityManager()
-	spriteID := list.NewEntity(0, 0, "sprite.png")
+	spriteID := list.NewEntity(0, 0, ENT_ENT1)
 	s := network.NewServer("8080")
 	w := NewWorld(list, s)
 	list.Update(w, 0.016)
@@ -23,7 +23,7 @@ func BenchmarkSpriteUpdate(b *testing.B) {
 	list := NewEntityManager()
 	rand.Seed(1)
 	for i := 0; i < 100; i++ {
-		list.NewEntity(rand.Float64()*1000, rand.Float64()*1000, "sprite.png")
+		list.NewEntity(rand.Float64()*1000, rand.Float64()*1000, ENT_ENT1)
 	}
 	s := network.NewServer("8080")
 	w := NewWorld(list, s)
