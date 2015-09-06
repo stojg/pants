@@ -6,19 +6,18 @@ import (
 )
 
 func TestCMAdd(t *testing.T) {
-	cm := &CollisionManager{}
-	cm.Add(NewPhysics(0, 0, 0, 0))
+	cm := NewCollisionManager()
+	cm.Add(NewPhysics(0, 0, 0, 0, 0, 0), 0)
 	if cm.Length() != 1 {
 		t.Errorf("Expected that there would be one item in the list")
 	}
 }
 
 func TestCMRemove(t *testing.T) {
-	cm := &CollisionManager{}
-	p1 := NewPhysics(0, 0, 0, 0)
-	p2 := NewPhysics(0, 0, 0, 0)
-	cm.Add(p1)
-	cm.Remove(p2)
+	cm := NewCollisionManager()
+	p1 := NewPhysics(0, 0, 0, 0, 0, 0)
+	cm.Add(p1, 0)
+	cm.Remove(1)
 	if cm.Length() != 1 {
 		t.Errorf("Expected that there would be one item in the list")
 	}
@@ -28,21 +27,21 @@ func TestCMRemove(t *testing.T) {
 }
 
 func TestDetectCollisions(t *testing.T) {
-	cm := &CollisionManager{}
-	cm.Add(NewPhysics(0, 0, 0, 0))
-	cm.Add(NewPhysics(10, 0, 0, 0))
+	cm := NewCollisionManager()
+	cm.Add(NewPhysics(0, 0, 0, 0, 0, 0), 0)
+	cm.Add(NewPhysics(10, 0, 0, 0, 0, 0), 1)
 	cm.DetectCollisions()
 }
 
 func TestResolveCollisions(t *testing.T) {
-	cm := &CollisionManager{}
+	cm := NewCollisionManager()
 	cm.ResolveCollisions(0.016)
 }
 
 func TestContactPairHit(t *testing.T) {
-	cm := &CollisionManager{}
-	a := NewPhysics(0, 0, 0, 0)
-	b := NewPhysics(1, 0, 0, 0)
+	cm := NewCollisionManager()
+	a := NewPhysics(0, 0, 0, 0, 20, 20)
+	b := NewPhysics(1, 0, 0, 0, 20, 20)
 	contact, err := cm.GenerateContacts(a, b)
 	if err != nil {
 		t.Errorf("GenerateContacts error '%s'", err)
@@ -56,12 +55,12 @@ func TestContactPairHit(t *testing.T) {
 }
 
 func TestDetectNoCollisionsOutsideOfGrid(t *testing.T) {
-	cm := &CollisionManager{}
+	cm := NewCollisionManager()
 	// this entity is partially outside the grid and should not be checked
-	a := NewPhysics(9, 9, 0, 0)
-	b := NewPhysics(10, 10, 0, 0)
-	cm.Add(a)
-	cm.Add(b)
+	a := NewPhysics(9, 9, 0, 0, 20, 20)
+	b := NewPhysics(10, 10, 0, 0, 20, 20)
+	cm.Add(a, 0)
+	cm.Add(b, 1)
 
 	cm.DetectCollisions()
 
@@ -73,15 +72,15 @@ func TestDetectNoCollisionsOutsideOfGrid(t *testing.T) {
 }
 
 func TestCMDetectCollisions(t *testing.T) {
-	cm := &CollisionManager{}
-	a := NewPhysics(10, 10, 0, 1)
+	cm := NewCollisionManager()
+	a := NewPhysics(10, 10, 0, 1, 20, 20)
 	// standing still
 	a.Velocity = &vector.Vec2{0, 0}
-	b := NewPhysics(20, 10, 0, 1)
+	b := NewPhysics(20, 10, 0, 1, 20, 20)
 	// moving towards a
 	b.Velocity = &vector.Vec2{-1, 0}
-	cm.Add(a)
-	cm.Add(b)
+	cm.Add(a, 0)
+	cm.Add(b, 1)
 
 	cm.DetectCollisions()
 
@@ -146,15 +145,15 @@ func TestCMDetectCollisions(t *testing.T) {
 
 // ~50000 28567
 func BenchmarkDetectCollisions(bench *testing.B) {
-	cm := &CollisionManager{}
-	a := NewPhysics(10, 10, 0, 1)
+	cm := NewCollisionManager()
+	a := NewPhysics(10, 10, 0, 1, 0, 0)
 	// standing still
 	a.Velocity = &vector.Vec2{0, 0}
-	b := NewPhysics(20, 10, 0, 1)
+	b := NewPhysics(20, 10, 0, 1, 0, 0)
 	// moving towards a
 	b.Velocity = &vector.Vec2{-1, 0}
-	cm.Add(a)
-	cm.Add(b)
+	cm.Add(a, 0)
+	cm.Add(b, 1)
 
 	bench.ResetTimer()
 	for n := 0; n < bench.N; n++ {

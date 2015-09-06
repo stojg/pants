@@ -6,7 +6,9 @@ import (
 
 type Contact struct {
 	a           *Physics
+	aId         uint64
 	b           *Physics
+	bId         uint64
 	normal      *vector.Vec2
 	penetration float64
 	restitution float64
@@ -15,6 +17,10 @@ type Contact struct {
 func (c *Contact) Resolve(duration float64) {
 	c.resolveVelocity(duration)
 	c.resolveInterpenetration()
+}
+
+func (c *Contact) Pair() (*Physics, *Physics) {
+	return c.a, c.b
 }
 
 // resolveInterpenetration separates two objects that has penetrated

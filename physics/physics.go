@@ -50,9 +50,9 @@ func NewPhysics(x, y, orientation, invMass, width, height float64) *Physics {
 
 	var radius float64
 	if width > height {
-		radius = width/2
+		radius = width / 2
 	} else {
-		radius = height/2
+		radius = height / 2
 	}
 
 	p.collisionGeometry = &Circle{

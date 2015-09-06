@@ -6,25 +6,26 @@ import (
 	"math"
 )
 
+func NewCollisionManager() *CollisionManager {
+	return &CollisionManager{
+		physics: make(map[uint64]*Physics, 0),
+	}
+}
 // CollisionManager keeps tracks and does collision testing between Physics
 // components
 type CollisionManager struct {
-	physics    []*Physics
+	physics    map[uint64]*Physics
 	collisions []*Contact
 }
 
 // Add a physics object to this collision manager
-func (cm *CollisionManager) Add(p *Physics) {
-	cm.physics = append(cm.physics, p)
+func (cm *CollisionManager) Add(p *Physics, id uint64) {
+	cm.physics[id] = p
 }
 
 // Remove a physics object to this collisions manager
-func (cm *CollisionManager) Remove(p *Physics) {
-	for i, obj := range cm.physics {
-		if obj == p {
-			cm.physics = append(cm.physics[:i], cm.physics[i+1:]...)
-		}
-	}
+func (cm *CollisionManager) Remove(id uint64) {
+	delete(cm.physics, id)
 }
 
 // Length returns the total number of physics object in the collision manager
@@ -60,9 +61,9 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	entityHeight := 20.0
 
 	// create the grid = {cols} * {height/cellsize}
-	var grid [6000][]*Physics
+	var grid [6000][]uint64
 
-	for _, p := range cm.physics {
+	for id, p := range cm.physics {
 
 		// pre-calculate these values for performance reasonss
 		entityMinX := p.Position.X - entityWidth/2.0
@@ -89,12 +90,12 @@ func (cm *CollisionManager) DetectCollisions() bool {
 		for cellX := entityMinCellX; cellX <= entityMaxCellX; cellX++ {
 			for cellY := entityMinCellY; cellY <= entityMaxCellY; cellY++ {
 				index := cellY*cols + cellX
-				grid[index] = append(grid[index], p)
+				grid[index] = append(grid[index], id)
 			}
 		}
 	}
 
-	checked := make(map[*Physics]map[*Physics]bool)
+	checked := make(map[uint64]map[uint64]bool)
 
 	// alright, we got all of the suckers in a nice array, it's time to see if
 	// they are colliding
@@ -106,17 +107,19 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 		// iterate over the entities in the cell
 		for i := 0; i < len(cell); i++ {
-			a := cell[i]
+			aId := cell[i]
 			// compare a with all the other entities 'after' it in the cell
 			for j := i + 1; j < len(cell); j++ {
-				b := cell[j]
+				bId := cell[j]
 				// have this pair been checked before?
-				if checked := checked[a][b]; checked {
+				if checked := checked[aId][bId]; checked {
 					continue
 				}
-				if checked := checked[b][a]; checked {
+				if checked := checked[bId][aId]; checked {
 					continue
 				}
+				a := cm.physics[aId]
+				b := cm.physics[bId]
 				// do the narrow phase collision detection
 				collision, err := cm.GenerateContacts(a, b)
 				if err != nil {
@@ -125,22 +128,24 @@ func (cm *CollisionManager) DetectCollisions() bool {
 				// we got a proper contact, populate contact data with more data
 				if collision != nil {
 					collision.a = a
+					collision.aId = 0
 					collision.b = b
+					collision.bId = 0
 					collision.restitution = 0.1
 					cm.collisions = append(cm.collisions, collision)
 				}
 
 				// if the checked maps not yet setup, initialise them here
-				if checked[a] == nil {
-					checked[a] = make(map[*Physics]bool, 1)
+				if checked[aId] == nil {
+					checked[aId] = make(map[uint64]bool, 1)
 				}
-				if checked[b] == nil {
-					checked[b] = make(map[*Physics]bool, 1)
+				if checked[bId] == nil {
+					checked[bId] = make(map[uint64]bool, 1)
 				}
 
 				// mark this pair as checked
-				checked[a][b] = true
-				checked[b][a] = true
+				checked[aId][bId] = true
+				checked[bId][aId] = true
 			}
 		}
 	}
@@ -150,6 +155,11 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	}
 	return false
 
+}
+
+// Collisions returns all current collisions
+func (cm *CollisionManager) Collisions() []*Contact {
+	return cm.collisions
 }
 
 // ResolveCollision will resolve all collisions found by DetectCollisions
