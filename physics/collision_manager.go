@@ -35,14 +35,14 @@ func (cm *CollisionManager) Length() int {
 }
 
 func (cm *CollisionManager) GenerateContacts(a, b *Physics) (*Contact, error) {
-	switch a.collisionGeometry.(type) {
+	switch a.CollisionGeometry.(type) {
 	case *Circle:
-		switch b.collisionGeometry.(type) {
+		switch b.CollisionGeometry.(type) {
 		case *Circle:
-			return CircleVsCircle(a.collisionGeometry.(*Circle), b.collisionGeometry.(*Circle)), nil
+			return CircleVsCircle(a.CollisionGeometry.(*Circle), b.CollisionGeometry.(*Circle)), nil
 		}
 	}
-	return nil, fmt.Errorf("No Collision test could be done between between %T and %T", a.collisionGeometry, b.collisionGeometry)
+	return nil, fmt.Errorf("No Collision test could be done between between %T and %T", a.CollisionGeometry, b.CollisionGeometry)
 }
 
 // DetectCollisions checks all managed Physics and checks for collisions
@@ -64,9 +64,9 @@ func (cm *CollisionManager) DetectCollisions() bool {
 	for id, p := range cm.physics {
 		d := p.Data
 		if d.Height > d.Width {
-			p.collisionGeometry.(*Circle).radius = d.Height / 2
+			p.CollisionGeometry.(*Circle).Radius = d.Height / 2
 		} else {
-			p.collisionGeometry.(*Circle).radius = d.Width / 2
+			p.CollisionGeometry.(*Circle).Radius = d.Width / 2
 		}
 		// pre-calculate these values for performance reasonss
 		entityMinX := d.Position.X - d.Width/2.0

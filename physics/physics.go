@@ -2,47 +2,40 @@ package physics
 
 import (
 	"github.com/stojg/pants/structs"
-	. "github.com/stojg/pants/vector"
+//	. "github.com/stojg/pants/vector"
 	"math"
 )
 
 type Physics struct {
 	Data              *structs.Data
 	PrevData          *structs.Data
-	collisionGeometry Geometry // the geometry used for collision detection
+	CollisionGeometry Geometry // the geometry used for collision detection
 }
 
-func NewPhysics(x, y, orientation, invMass, width, height float64) *Physics {
+func NewPhysics(data *structs.Data) *Physics {
 
-	data := structs.NewData()
-	data.Position = &Vec2{X: x, Y: y}
-	data.Orientation = orientation
-	data.InvMass = invMass
-	data.Width = width
-	data.Height = height
 	data.MaxVelocity = 300
 	data.MaxAcceleration = 100
 
 	p := &Physics{
 		Data:              data,
 		PrevData:          structs.NewData(),
-		collisionGeometry: &Circle{position: data.Position},
+		CollisionGeometry: &Circle{
+			Position: data.Position,
+		},
 	}
 
 	p.PrevData.Copy(p.Data)
-	p.SetSize(width, height)
-
+	if data.Width > data.Height {
+		p.CollisionGeometry.(*Circle).Radius = data.Width / 2
+	} else {
+		p.CollisionGeometry.(*Circle).Radius = data.Height / 2
+	}
 	return p
 }
 
 func (p *Physics) SetSize(width, height float64) {
-	p.Data.Width = width
-	p.Data.Height = height
-	if width > height {
-		p.collisionGeometry.(*Circle).radius = width / 2
-	} else {
-		p.collisionGeometry.(*Circle).radius = height / 2
-	}
+
 }
 
 func (c *Physics) Integrate(data *structs.Data, duration float64) {

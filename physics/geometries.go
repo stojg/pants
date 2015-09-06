@@ -8,12 +8,12 @@ type Geometry interface{}
 
 func NewCircle(x, y, radius float64) *Circle {
 	return &Circle{
-		position: &Vec2{x, y},
-		radius:   radius,
+		Position: &Vec2{x, y},
+		Radius:   radius,
 	}
 }
 
 type Circle struct {
-	position *Vec2
-	radius   float64
+	Position *Vec2
+	Radius   float64
 }

@@ -23,6 +23,16 @@ func NewData() *Data {
 	}
 }
 
+func NewSetData(x, y, width, height float64) *Data {
+	data := NewData()
+	data.Position.X = x
+	data.Position.Y = y
+	data.Width = width
+	data.Height = height
+	data.InvMass = 1
+	return data
+}
+
 type Data struct {
 	Position           *Vec2
 	Velocity           *Vec2

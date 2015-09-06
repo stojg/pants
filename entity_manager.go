@@ -5,6 +5,7 @@ import (
 	. "github.com/stojg/pants/vector"
 	"github.com/stojg/tree"
 	"math"
+	"github.com/stojg/pants/structs"
 )
 
 func NewEntityManager() *EntityManager {
@@ -52,7 +53,14 @@ func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 	}
 
 	em.entities[entity.Id] = entity
-	em.physics[entity.Id] = NewPhysics(x, y, 3.14*2, props.invMass, props.Width, props.Height)
+	data := structs.NewData()
+	data.Position.X = x
+	data.Position.Y = y
+	data.Orientation = 3.14 * 2
+	data.InvMass = props.invMass
+	data.Width = props.Width
+	data.Height = props.Height
+	em.physics[entity.Id] = NewPhysics(data)
 	em.physics[entity.Id].Data.Damping = 0.99
 
 	//	em.forceRegistry.Add(em.physics[entity.Id], gravity)
@@ -84,6 +92,13 @@ func (em *EntityManager) Update(w *World, duration float64) {
 	for id, p := range em.physics {
 		data := p.Data
 		p.Integrate(data, duration)
+
+		// update collision volume
+		if data.Width > data.Height {
+			p.CollisionGeometry.(*Circle).Radius = data.Width / 2
+		} else {
+			p.CollisionGeometry.(*Circle).Radius = data.Height / 2
+		}
 
 		moved := false
 		if !data.Position.Equals(p.PrevData.Position) {

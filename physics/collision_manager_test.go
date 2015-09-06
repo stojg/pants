@@ -1,13 +1,14 @@
 package physics
 
 import (
+	"github.com/stojg/pants/structs"
 	"github.com/stojg/pants/vector"
 	"testing"
 )
 
 func TestCMAdd(t *testing.T) {
 	cm := NewCollisionManager()
-	cm.Add(NewPhysics(0, 0, 0, 0, 0, 0), 0)
+	cm.Add(NewPhysics(structs.NewSetData(0, 0, 0, 0)), 0)
 	if cm.Length() != 1 {
 		t.Errorf("Expected that there would be one item in the list")
 	}
@@ -15,7 +16,7 @@ func TestCMAdd(t *testing.T) {
 
 func TestCMRemove(t *testing.T) {
 	cm := NewCollisionManager()
-	p1 := NewPhysics(0, 0, 0, 0, 0, 0)
+	p1 := NewPhysics(structs.NewSetData(0, 0, 0, 0))
 	cm.Add(p1, 0)
 	cm.Remove(1)
 	if cm.Length() != 1 {
@@ -28,8 +29,8 @@ func TestCMRemove(t *testing.T) {
 
 func TestDetectCollisions(t *testing.T) {
 	cm := NewCollisionManager()
-	cm.Add(NewPhysics(0, 0, 0, 0, 0, 0), 0)
-	cm.Add(NewPhysics(10, 0, 0, 0, 0, 0), 1)
+	cm.Add(NewPhysics(structs.NewSetData(0, 0, 0, 0)), 0)
+	cm.Add(NewPhysics(structs.NewSetData(10, 0, 0, 0)), 1)
 	cm.DetectCollisions()
 }
 
@@ -40,25 +41,32 @@ func TestResolveCollisions(t *testing.T) {
 
 func TestContactPairHit(t *testing.T) {
 	cm := NewCollisionManager()
-	a := NewPhysics(0, 0, 0, 0, 20, 20)
-	b := NewPhysics(1, 0, 0, 0, 20, 20)
+	a := NewPhysics(structs.NewSetData(0, 0, 20, 20))
+	b := NewPhysics(structs.NewSetData(1, 0, 20, 20))
 	contact, err := cm.GenerateContacts(a, b)
 	if err != nil {
 		t.Errorf("GenerateContacts error '%s'", err)
 		return
 	}
+
+	if contact == nil {
+		t.Errorf("No collision detected")
+		return
+	}
+
 	actual := contact.penetration
 	expected := 19.0
 	if actual != expected {
 		t.Errorf("Contact.a should be %v, not %v", expected, actual)
+		return
 	}
 }
 
 func TestDetectNoCollisionsOutsideOfGrid(t *testing.T) {
 	cm := NewCollisionManager()
 	// this entity is partially outside the grid and should not be checked
-	a := NewPhysics(9, 9, 0, 0, 20, 20)
-	b := NewPhysics(10, 10, 0, 0, 20, 20)
+	a := NewPhysics(structs.NewSetData(9, 9, 20, 20))
+	b := NewPhysics(structs.NewSetData(10, 10, 20, 20))
 	cm.Add(a, 0)
 	cm.Add(b, 1)
 
@@ -73,10 +81,11 @@ func TestDetectNoCollisionsOutsideOfGrid(t *testing.T) {
 
 func TestCMDetectCollisions(t *testing.T) {
 	cm := NewCollisionManager()
-	a := NewPhysics(10, 10, 0, 1, 20, 20)
+
+	a := NewPhysics(structs.NewSetData(10, 10, 20, 20))
 	// standing still
 	a.Data.Velocity = &vector.Vec2{0, 0}
-	b := NewPhysics(20, 10, 0, 1, 20, 20)
+	b := NewPhysics(structs.NewSetData(20, 10, 20, 20))
 	// moving towards a
 	b.Data.Velocity = &vector.Vec2{-1, 0}
 	cm.Add(a, 0)
@@ -146,10 +155,12 @@ func TestCMDetectCollisions(t *testing.T) {
 // ~50000 28567
 func BenchmarkDetectCollisions(bench *testing.B) {
 	cm := NewCollisionManager()
-	a := NewPhysics(10, 10, 0, 1, 0, 0)
+
+	a := NewPhysics(structs.NewSetData(10, 10, 0, 0))
 	// standing still
 	a.Data.Velocity = &vector.Vec2{0, 0}
-	b := NewPhysics(20, 10, 0, 1, 0, 0)
+
+	b := NewPhysics(structs.NewSetData(20, 10, 0, 0))
 	// moving towards a
 	b.Data.Velocity = &vector.Vec2{-1, 0}
 	cm.Add(a, 0)
