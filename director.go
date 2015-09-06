@@ -61,7 +61,6 @@ func (director *Director) Notify(evt Event) {
 			pA.Data.InvMass = 1 / (1/pA.Data.InvMass + 2.0)
 		}
 	case *ClickEvent:
-		log.Printf("Asdsad")
 		for id := range world.entityManager.entities {
 			world.entityManager.Remove(id)
 		}
