@@ -19,8 +19,8 @@ func (c *Contact) Resolve(duration float64) {
 	c.resolveInterpenetration()
 }
 
-func (c *Contact) Pair() (*Physics, *Physics) {
-	return c.a, c.b
+func (c *Contact) Pair() (uint64, uint64) {
+	return c.aId, c.bId
 }
 
 // resolveInterpenetration separates two objects that has penetrated

@@ -128,9 +128,9 @@ func (cm *CollisionManager) DetectCollisions() bool {
 				// we got a proper contact, populate contact data with more data
 				if collision != nil {
 					collision.a = a
-					collision.aId = 0
+					collision.aId = aId
 					collision.b = b
-					collision.bId = 0
+					collision.bId = bId
 					collision.restitution = 0.1
 					cm.collisions = append(cm.collisions, collision)
 				}
