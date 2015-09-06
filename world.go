@@ -63,15 +63,15 @@ type World struct {
 
 type EntityUpdate struct {
 	Id                  uint64     `bson:",minsize"`
-	X, Y, Height, Width float64    `bson:",minsize,omitempty"`
+	X, Y, Height, Width float64    `bson:",minsize,omitempty"` // @todo turn this into a vec2
 	Orientation         float64    `bson:",minsize"`
 	Type                EntityType `bson:",minsize"`
 	Dead                bool       `bson:",minsize,omitempty"`
 	Properties          *EntityProperty
 }
 
-func (w *World) RandF64(x int) float64 {
-	return w.rand.Float64() * 800
+func (w *World) RandF64(x float64) float64 {
+	return w.rand.Float64() * x
 }
 
 func (w *World) Physic(id uint64) *Physics {
