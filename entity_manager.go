@@ -9,7 +9,7 @@ import (
 func NewEntityManager() *EntityManager {
 	return &EntityManager{
 		entities:         make(map[uint64]*Entity),
-		ais:              make(map[uint64]AI),
+		controllers:      make(map[uint64]Controller),
 		physics:          make(map[uint64]*Physics),
 		boundingBoxes:    make(map[uint64]*tree.Rectangle),
 		updated:          make(map[uint64]bool),
@@ -21,7 +21,7 @@ func NewEntityManager() *EntityManager {
 type EntityManager struct {
 	lastEntityID     uint64
 	entities         map[uint64]*Entity
-	ais              map[uint64]AI
+	controllers      map[uint64]Controller
 	physics          map[uint64]*Physics
 	boundingBoxes    map[uint64]*tree.Rectangle
 	updated          map[uint64]bool
@@ -57,7 +57,7 @@ func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 	em.collisionManager.Add(em.physics[entity.Id])
 
 	if props.ai {
-		em.ais[entity.Id] = NewBasicAI(entity.Id)
+		em.controllers[entity.Id] = NewBasicAI(entity.Id)
 	}
 	em.updated[entity.Id] = true
 	return entity.Id
@@ -67,7 +67,7 @@ func (em *EntityManager) Update(w *World, duration float64) {
 
 	em.forceRegistry.Update(duration)
 
-	for id, ai := range em.ais {
+	for id, ai := range em.controllers {
 		ai.Update(id, w, duration)
 	}
 
@@ -84,7 +84,7 @@ func (em *EntityManager) Update(w *World, duration float64) {
 
 func (em *EntityManager) Changed() []*EntityUpdate {
 	// @todo(stig): it is possible that this might be called before the em.sprite has been fully setup, ie a race condition
-	ids := make([]uint64,0)
+	ids := make([]uint64, 0)
 	for k := range em.entities {
 		ids = append(ids, k)
 	}

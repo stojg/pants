@@ -6,7 +6,7 @@ import (
 	"github.com/stojg/pants/timer"
 )
 
-type AI interface {
+type Controller interface {
 	Update(id uint64, w *World, t float64)
 }
 
