@@ -8,7 +8,7 @@ import (
 )
 
 type Controller interface {
-	Update(id uint64, w *World, t float64)
+	Update(id uint64)
 }
 
 /// Conditions
@@ -91,7 +91,7 @@ func NewBasicAI(id uint64) *BasicAI {
 	return ai
 }
 
-func (d *BasicAI) Update(id uint64, w *World, t float64) {
+func (d *BasicAI) Update(id uint64) {
 	for _, a := range d.stateMachine.Update() {
 		if a != nil {
 			a.Act(id)

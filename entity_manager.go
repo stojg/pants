@@ -42,6 +42,7 @@ func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 
 	em.lastEntityID += 1
 
+	// copy the properties from the data file
 	props := &EntityProperty{}
 	*props = *entityProperties[entType]
 
@@ -85,8 +86,8 @@ func (em *EntityManager) Update(w *World, duration float64) {
 
 	em.forceRegistry.Update(duration)
 
-	for id, ai := range em.controllers {
-		ai.Update(id, w, duration)
+	for id, ctrl := range em.controllers {
+		ctrl.Update(id)
 	}
 
 	for id, p := range em.physics {
