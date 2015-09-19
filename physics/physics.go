@@ -2,7 +2,7 @@ package physics
 
 import (
 	"github.com/stojg/pants/structs"
-//	. "github.com/stojg/pants/vector"
+	//	. "github.com/stojg/pants/vector"
 	"math"
 )
 
@@ -18,8 +18,8 @@ func NewPhysics(data *structs.Data) *Physics {
 	data.MaxAcceleration = 100
 
 	p := &Physics{
-		Data:              data,
-		PrevData:          structs.NewData(),
+		Data:     data,
+		PrevData: structs.NewData(),
 		CollisionGeometry: &Circle{
 			Position: data.Position,
 		},

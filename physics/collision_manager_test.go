@@ -6,37 +6,21 @@ import (
 	"testing"
 )
 
-func TestCMAdd(t *testing.T) {
-	cm := NewCollisionManager()
-	cm.Add(NewPhysics(structs.NewSetData(0, 0, 0, 0)), 0)
-	if cm.Length() != 1 {
-		t.Errorf("Expected that there would be one item in the list")
-	}
-}
-
-func TestCMRemove(t *testing.T) {
-	cm := NewCollisionManager()
-	p1 := NewPhysics(structs.NewSetData(0, 0, 0, 0))
-	cm.Add(p1, 0)
-	cm.Remove(1)
-	if cm.Length() != 1 {
-		t.Errorf("Expected that there would be one item in the list")
-	}
-	if cm.physics[0] != p1 {
-		t.Errorf("Expected that the remaining item would be p2")
-	}
-}
-
 func TestDetectCollisions(t *testing.T) {
 	cm := NewCollisionManager()
-	cm.Add(NewPhysics(structs.NewSetData(0, 0, 0, 0)), 0)
-	cm.Add(NewPhysics(structs.NewSetData(10, 0, 0, 0)), 1)
-	cm.DetectCollisions()
+
+	physics := make(map[uint64]*Physics, 0)
+	physics[0] = NewPhysics(structs.NewSetData(0, 0, 0, 0))
+	physics[1] = NewPhysics(structs.NewSetData(10, 0, 0, 0))
+
+	grid := structs.NewGrid(1000.0, 1000.0, 20.0)
+	cm.DetectCollisions(physics, grid)
 }
 
 func TestResolveCollisions(t *testing.T) {
 	cm := NewCollisionManager()
-	cm.ResolveCollisions(0.016)
+	collisions := make([]*Contact, 0)
+	cm.ResolveCollisions(collisions, 0.016)
 }
 
 func TestContactPairHit(t *testing.T) {
@@ -64,15 +48,14 @@ func TestContactPairHit(t *testing.T) {
 
 func TestDetectNoCollisionsOutsideOfGrid(t *testing.T) {
 	cm := NewCollisionManager()
+	physics := make(map[uint64]*Physics, 0)
 	// this entity is partially outside the grid and should not be checked
-	a := NewPhysics(structs.NewSetData(9, 9, 20, 20))
-	b := NewPhysics(structs.NewSetData(10, 10, 20, 20))
-	cm.Add(a, 0)
-	cm.Add(b, 1)
+	physics[0] = NewPhysics(structs.NewSetData(9, 9, 20, 20))
+	physics[1] = NewPhysics(structs.NewSetData(10, 10, 20, 20))
+	grid := structs.NewGrid(1000.0, 1000.0, 20.0)
+	collisions := cm.DetectCollisions(physics, grid)
 
-	cm.DetectCollisions()
-
-	numCollisions := len(cm.collisions)
+	numCollisions := len(collisions)
 	expectedCollisions := 0
 	if numCollisions != expectedCollisions {
 		t.Errorf("Expected that there would be %d collision(s), not %d", expectedCollisions, numCollisions)
@@ -88,19 +71,23 @@ func TestCMDetectCollisions(t *testing.T) {
 	b := NewPhysics(structs.NewSetData(20, 10, 20, 20))
 	// moving towards a
 	b.Data.Velocity = &vector.Vec2{-1, 0}
-	cm.Add(a, 0)
-	cm.Add(b, 1)
 
-	cm.DetectCollisions()
+	physics := make(map[uint64]*Physics, 0)
+	physics[0] = a
+	physics[1] = b
 
-	numCollisions := len(cm.collisions)
+	grid := structs.NewGrid(1000.0, 1000.0, 20.0)
+
+	collisions := cm.DetectCollisions(physics, grid)
+
+	numCollisions := len(collisions)
 	expectedCollisions := 1
 	if numCollisions != expectedCollisions {
 		t.Errorf("Expected that there would be %d collision(s), not %d", expectedCollisions, numCollisions)
 		return
 	}
 
-	contact := cm.collisions[0]
+	contact := collisions[0]
 	expectedPenetration := 10.0
 	if contact.penetration != expectedPenetration {
 		t.Errorf("Expected that the collision would have a penetration of %f, not %f", expectedPenetration, contact.penetration)
@@ -152,22 +139,29 @@ func TestCMDetectCollisions(t *testing.T) {
 	}
 }
 
-// ~50000 28567
+// ~50000
+// ~28567
+// ~13765
+// ~26708
 func BenchmarkDetectCollisions(bench *testing.B) {
 	cm := NewCollisionManager()
 
-	a := NewPhysics(structs.NewSetData(10, 10, 0, 0))
 	// standing still
+	a := NewPhysics(structs.NewSetData(10, 10, 0, 0))
 	a.Data.Velocity = &vector.Vec2{0, 0}
 
-	b := NewPhysics(structs.NewSetData(20, 10, 0, 0))
 	// moving towards a
+	b := NewPhysics(structs.NewSetData(20, 10, 0, 0))
 	b.Data.Velocity = &vector.Vec2{-1, 0}
-	cm.Add(a, 0)
-	cm.Add(b, 1)
 
+	physics := make(map[uint64]*Physics, 0)
+	physics[0] = a
+	physics[1] = b
+
+	grid := structs.NewGrid(1000.0, 1000.0, 20.0)
 	bench.ResetTimer()
 	for n := 0; n < bench.N; n++ {
-		cm.DetectCollisions()
+		grid.Clear()
+		cm.DetectCollisions(physics, grid)
 	}
 }

@@ -2,37 +2,17 @@ package physics
 
 import (
 	"fmt"
+	. "github.com/stojg/pants/structs"
 	"log"
 	"math"
 )
 
 func NewCollisionManager() *CollisionManager {
-	return &CollisionManager{
-		physics: make(map[uint64]*Physics, 0),
-	}
+	return &CollisionManager{}
 }
 
-// CollisionManager keeps tracks and does collision testing between Physics
-// components
-type CollisionManager struct {
-	physics    map[uint64]*Physics
-	collisions []*Contact
-}
-
-// Add a physics object to this collision manager
-func (cm *CollisionManager) Add(p *Physics, id uint64) {
-	cm.physics[id] = p
-}
-
-// Remove a physics object to this collisions manager
-func (cm *CollisionManager) Remove(id uint64) {
-	delete(cm.physics, id)
-}
-
-// Length returns the total number of physics object in the collision manager
-func (cm *CollisionManager) Length() int {
-	return len(cm.physics)
-}
+// CollisionManager does collision testing between Physics components
+type CollisionManager struct{}
 
 func (cm *CollisionManager) GenerateContacts(a, b *Physics) (*Contact, error) {
 	switch a.CollisionGeometry.(type) {
@@ -48,52 +28,43 @@ func (cm *CollisionManager) GenerateContacts(a, b *Physics) (*Contact, error) {
 // DetectCollisions checks all managed Physics and checks for collisions
 // if they to collide the collision contact will be stored for later usage by
 // ResolveCollisions
-func (cm *CollisionManager) DetectCollisions() bool {
+func (cm *CollisionManager) DetectCollisions(entities map[uint64]*Physics, grid *Grid) []*Contact {
 
-	cm.collisions = make([]*Contact, 0)
+	collisionList := make([]*Contact, 0)
 
-	width := 1000.0
-	height := 1000.0
-	cellSize := 20.0
-
-	cols := int(width / 20)
-
-	// create the grid = {cols} * {height/cellsize}
-	var grid [2500][]uint64
-
-	for id, p := range cm.physics {
-		d := p.Data
+	for id, entity := range entities {
+		d := entity.Data
 		if d.Height > d.Width {
-			p.CollisionGeometry.(*Circle).Radius = d.Height / 2
+			entity.CollisionGeometry.(*Circle).Radius = d.Height / 2
 		} else {
-			p.CollisionGeometry.(*Circle).Radius = d.Width / 2
+			entity.CollisionGeometry.(*Circle).Radius = d.Width / 2
 		}
-		// pre-calculate these values for performance reasonss
-		entityMinX := d.Position.X - d.Width/2.0
-		entityMaxX := d.Position.X + d.Width/2.0
-		entityMinY := d.Position.Y - d.Height/2.0
-		entityMaxY := d.Position.Y + d.Height/2.0
+		// pre-calculate these values for performance reasons
+		entityMinX := int(d.Position.X - d.Width/2)
+		entityMaxX := int(d.Position.X + d.Width/2)
+		entityMinY := int(d.Position.Y - d.Height/2)
+		entityMaxY := int(d.Position.Y + d.Height/2)
 
 		// entities outside of the grid should not be checked
-		if entityMinX < 0 || entityMaxX > width || entityMinY < 0 || entityMaxY > height {
+		if entityMinX < 0 || entityMaxX >= grid.Width || entityMinY < 0 || entityMaxY >= grid.Height {
 			continue
 		}
 
 		// find extremes of cells that entity overlaps
 		// subtract min to shift grid to avoid negative numbers
-		gridMinSizeX := 0.0
-		gridMinSizeY := 0.0
-		entityMinCellX := int((entityMinX - gridMinSizeX) / cellSize)
-		entityMaxCellX := int((entityMaxX - gridMinSizeX) / cellSize)
-		entityMinCellY := int((entityMinY - gridMinSizeY) / cellSize)
-		entityMaxCellY := int((entityMaxY - gridMinSizeY) / cellSize)
+		gridMinSizeX := 0
+		gridMinSizeY := 0
+		entityMinCellX := (entityMinX - gridMinSizeX) / grid.CellSize
+		entityMaxCellX := (entityMaxX - gridMinSizeX) / grid.CellSize
+		entityMinCellY := (entityMinY - gridMinSizeY) / grid.CellSize
+		entityMaxCellY := (entityMaxY - gridMinSizeY) / grid.CellSize
 
 		// insert entity into each cell it overlaps
 		// loop to make sure that all cells between extremes are found
 		for cellX := entityMinCellX; cellX <= entityMaxCellX; cellX++ {
 			for cellY := entityMinCellY; cellY <= entityMaxCellY; cellY++ {
-				index := cellY*cols + cellX
-				grid[index] = append(grid[index], id)
+				index := cellY*grid.Cols + cellX
+				grid.Cells[index] = append(grid.Cells[index], id)
 			}
 		}
 	}
@@ -102,7 +73,7 @@ func (cm *CollisionManager) DetectCollisions() bool {
 
 	// alright, we got all of the suckers in a nice array, it's time to see if
 	// they are colliding
-	for _, cell := range grid {
+	for _, cell := range grid.Cells {
 		// if there is zero or one entity in this cell there can't be a collision
 		if len(cell) < 2 {
 			continue
@@ -121,8 +92,8 @@ func (cm *CollisionManager) DetectCollisions() bool {
 				if checked := checked[bId][aId]; checked {
 					continue
 				}
-				a := cm.physics[aId]
-				b := cm.physics[bId]
+				a := entities[aId]
+				b := entities[bId]
 				// do the narrow phase collision detection
 				collision, err := cm.GenerateContacts(a, b)
 				if err != nil {
@@ -135,7 +106,7 @@ func (cm *CollisionManager) DetectCollisions() bool {
 					collision.b = b
 					collision.bId = bId
 					collision.restitution = 0.1
-					cm.collisions = append(cm.collisions, collision)
+					collisionList = append(collisionList, collision)
 				}
 
 				// if the checked maps not yet setup, initialise them here
@@ -153,22 +124,13 @@ func (cm *CollisionManager) DetectCollisions() bool {
 		}
 	}
 
-	if len(cm.collisions) > 0 {
-		return true
-	}
-	return false
-
-}
-
-// Collisions returns all current collisions
-func (cm *CollisionManager) Collisions() []*Contact {
-	return cm.collisions
+	return collisionList
 }
 
 // ResolveCollision will resolve all collisions found by DetectCollisions
-func (cm *CollisionManager) ResolveCollisions(duration float64) {
+func (cm *CollisionManager) ResolveCollisions(collisions []*Contact, duration float64) {
 
-	numContacts := len(cm.collisions)
+	numContacts := len(collisions)
 	iterationsUsed := 0
 	iterations := numContacts * 2
 
@@ -178,7 +140,7 @@ func (cm *CollisionManager) ResolveCollisions(duration float64) {
 		// find the contact with the largest closing velocity
 		max := math.MaxFloat64
 		maxIndex := numContacts
-		for i, collision := range cm.collisions {
+		for i, collision := range collisions {
 			sepVel := collision.separatingVelocity()
 			// we found a collision with the lowest separation velocity that is
 			// intersection
@@ -194,8 +156,7 @@ func (cm *CollisionManager) ResolveCollisions(duration float64) {
 		}
 
 		// resolve the collision with the lowest separating velocity
-		cm.collisions[maxIndex].Resolve(duration)
+		collisions[maxIndex].Resolve(duration)
 		iterationsUsed += 1
 	}
-	cm.collisions = make([]*Contact, 0)
 }

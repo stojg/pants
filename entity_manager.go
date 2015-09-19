@@ -2,10 +2,10 @@ package main
 
 import (
 	. "github.com/stojg/pants/physics"
+	"github.com/stojg/pants/structs"
 	. "github.com/stojg/pants/vector"
 	"github.com/stojg/tree"
 	"math"
-	"github.com/stojg/pants/structs"
 )
 
 func NewEntityManager() *EntityManager {
@@ -17,6 +17,7 @@ func NewEntityManager() *EntityManager {
 		updated:          make(map[uint64]bool),
 		forceRegistry:    &PhysicsForceRegistry{},
 		collisionManager: NewCollisionManager(),
+		grid:             structs.NewGrid(1000.0, 1000.0, 20.0),
 	}
 }
 
@@ -29,6 +30,7 @@ type EntityManager struct {
 	updated          map[uint64]bool
 	forceRegistry    *PhysicsForceRegistry
 	collisionManager *CollisionManager
+	grid             *structs.Grid
 }
 
 var gravity *StaticForce
@@ -65,8 +67,6 @@ func (em *EntityManager) NewEntity(x, y float64, entType EntityType) uint64 {
 	em.physics[entity.Id].Data.Damping = 0.99
 
 	//	em.forceRegistry.Add(em.physics[entity.Id], gravity)
-	em.collisionManager.Add(em.physics[entity.Id], entity.Id)
-
 	if props.ai {
 		em.controllers[entity.Id] = NewBasicAI(entity.Id)
 	}
@@ -78,7 +78,6 @@ func (em *EntityManager) Remove(id uint64) {
 	em.entities[id].Dead = true
 	delete(em.physics, id)
 	delete(em.controllers, id)
-	em.collisionManager.Remove(id)
 	em.updated[id] = true
 }
 
@@ -115,14 +114,15 @@ func (em *EntityManager) Update(w *World, duration float64) {
 		}
 	}
 
-	em.collisionManager.DetectCollisions()
-	for _, collision := range em.collisionManager.Collisions() {
+	em.grid.Clear()
+	collisions := em.collisionManager.DetectCollisions(em.physics, em.grid)
+	for _, collision := range collisions {
 		evt := &CollisionEvent{}
 		evt.a, evt.b = collision.Pair()
 		events.ScheduleEvent(evt)
 	}
 
-	em.collisionManager.ResolveCollisions(duration)
+	em.collisionManager.ResolveCollisions(collisions, duration)
 }
 
 func (em *EntityManager) Changed() []*EntityUpdate {
