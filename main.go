@@ -16,8 +16,8 @@ var world *World
 func main() {
 	defer profile.Start(&profile.Config{CPUProfile: true, ProfilePath: "/tmp/"}).Stop()
 
-	//	nCPU := runtime.NumCPU()
-	nCPU := 2
+	nCPU := runtime.NumCPU()
+	//nCPU := 2
 	runtime.GOMAXPROCS(nCPU)
 	log.Printf("running on %d CPUs", nCPU)
 

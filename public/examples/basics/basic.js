@@ -298,6 +298,8 @@ var Basic = (function (assets, network) {
 	function handleMessage(msg) {
 		switch (msg.topic) {
 			case 'time_request':
+				console.log('time request');
+				console.log(msg);
 				timeMessage(msg);
 				break;
 			case 'map':

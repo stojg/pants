@@ -100,20 +100,16 @@ func (em *EntityManager) Update(w *World, duration float64) {
 			p.CollisionGeometry.(*Circle).Radius = data.Height / 2
 		}
 
-		moved := false
 		if !data.Position.Equals(p.PrevData.Position) {
-			moved = true
-		}
-		if math.Abs(data.Orientation-p.PrevData.Orientation) < EPSILON {
-			moved = true
-		}
-		p.PrevData.Copy(data)
-
-		if moved {
 			em.updated[id] = true
 		}
+		if math.Abs(data.Orientation-p.PrevData.Orientation) < EPSILON {
+			em.updated[id] = true
+		}
+		p.PrevData.Copy(data)
 	}
 
+	// clear the collision grid and rebuild it
 	em.grid.Clear()
 	collisions := em.collisionManager.DetectCollisions(em.physics, em.grid)
 	for _, collision := range collisions {
