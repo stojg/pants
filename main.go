@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/davecheney/profile"
 	"github.com/stojg/pants/network"
 	"log"
 	_ "net/http/pprof"
@@ -14,7 +13,7 @@ var entityManager *EntityManager
 var world *World
 
 func main() {
-	defer profile.Start(&profile.Config{CPUProfile: true, ProfilePath: "/tmp/"}).Stop()
+	//defer profile.Start(&profile.Config{CPUProfile: true, ProfilePath: "/tmp/"}).Stop()
 
 	//	nCPU := runtime.NumCPU()
 	nCPU := 2
